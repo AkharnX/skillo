@@ -1,0 +1,21 @@
+{
+  "discipline": "java",
+  "questions": [
+    {"text": "Quel mot-clé permet de déclarer une constante en Java ?", "type": "radio", "timeLimit": 20,
+     "choices": [{"text": "const", "correct": false}, {"text": "final", "correct": true}, {"text": "static", "correct": false}, {"text": "immutable", "correct": false}]},
+    {"text": "Quelle est la taille d'un int en Java ?", "type": "radio", "timeLimit": 20,
+     "choices": [{"text": "8 bits", "correct": false}, {"text": "16 bits", "correct": false}, {"text": "32 bits", "correct": true}, {"text": "64 bits", "correct": false}]},
+    {"text": "Quelles collections font partie de java.util ? (plusieurs réponses)", "type": "checkbox", "timeLimit": 30,
+     "choices": [{"text": "ArrayList", "correct": true}, {"text": "HashMap", "correct": true}, {"text": "Vector2D", "correct": false}, {"text": "LinkedList", "correct": true}]},
+    {"text": "Quel est le point d'entrée d'un programme Java ?", "type": "radio", "timeLimit": 20,
+     "choices": [{"text": "public void start()", "correct": false}, {"text": "public static void main(String[] args)", "correct": true}, {"text": "int main()", "correct": false}]},
+    {"text": "Quels mots-clés sont des modificateurs d'accès ? (plusieurs réponses)", "type": "checkbox", "timeLimit": 30,
+     "choices": [{"text": "public", "correct": true}, {"text": "private", "correct": true}, {"text": "void", "correct": false}, {"text": "protected", "correct": true}]},
+    {"text": "Que renvoie 7 / 2 en Java (entiers) ?", "type": "radio", "timeLimit": 20,
+     "choices": [{"text": "3.5", "correct": false}, {"text": "3", "correct": true}, {"text": "4", "correct": false}]},
+    {"text": "Quelle interface faut-il implémenter pour utiliser un objet dans un for-each ?", "type": "radio", "timeLimit": 25,
+     "choices": [{"text": "Iterable", "correct": true}, {"text": "Comparable", "correct": false}, {"text": "Runnable", "correct": false}, {"text": "Serializable", "correct": false}]},
+    {"text": "Quelles affirmations sur une interface sont vraies ? (plusieurs réponses)", "type": "checkbox", "timeLimit": 30,
+     "choices": [{"text": "Une classe peut implémenter plusieurs interfaces", "correct": true}, {"text": "On peut instancier une interface avec new", "correct": false}, {"text": "Une interface peut avoir des méthodes default", "correct": true}]}
+  ]
+}

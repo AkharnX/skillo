@@ -1,0 +1,21 @@
+{
+  "discipline": "algo",
+  "questions": [
+    {"text": "Quelle est la complexité d'une recherche dichotomique dans un tableau trié de n éléments ?", "type": "radio", "timeLimit": 25,
+     "choices": [{"text": "O(n)", "correct": false}, {"text": "O(log n)", "correct": true}, {"text": "O(n log n)", "correct": false}, {"text": "O(1)", "correct": false}]},
+    {"text": "Quelle structure fonctionne en LIFO (dernier entré, premier sorti) ?", "type": "radio", "timeLimit": 20,
+     "choices": [{"text": "File (queue)", "correct": false}, {"text": "Pile (stack)", "correct": true}, {"text": "Arbre", "correct": false}]},
+    {"text": "Quels algorithmes de tri ont une complexité moyenne en O(n log n) ? (plusieurs réponses)", "type": "checkbox", "timeLimit": 30,
+     "choices": [{"text": "Tri fusion", "correct": true}, {"text": "Tri à bulles", "correct": false}, {"text": "Tri rapide", "correct": true}, {"text": "Tri par insertion", "correct": false}]},
+    {"text": "Que vaut la somme des entiers de 1 à 10 ?", "type": "radio", "timeLimit": 20,
+     "choices": [{"text": "45", "correct": false}, {"text": "55", "correct": true}, {"text": "100", "correct": false}]},
+    {"text": "Une fonction récursive doit obligatoirement avoir :", "type": "radio", "timeLimit": 20,
+     "choices": [{"text": "Une boucle for", "correct": false}, {"text": "Un cas de base (condition d'arrêt)", "correct": true}, {"text": "Deux paramètres", "correct": false}]},
+    {"text": "Quelles affirmations sur un tableau sont vraies ? (plusieurs réponses)", "type": "checkbox", "timeLimit": 30,
+     "choices": [{"text": "L'accès à un élément par index est en O(1)", "correct": true}, {"text": "Sa taille peut changer librement", "correct": false}, {"text": "Les éléments sont contigus en mémoire", "correct": true}]},
+    {"text": "Quel parcours d'arbre visite racine, puis sous-arbre gauche, puis sous-arbre droit ?", "type": "radio", "timeLimit": 25,
+     "choices": [{"text": "Infixe", "correct": false}, {"text": "Préfixe", "correct": true}, {"text": "Postfixe", "correct": false}]},
+    {"text": "Combien d'itérations fait la boucle « pour i de 0 à n-1 » ?", "type": "radio", "timeLimit": 15,
+     "choices": [{"text": "n - 1", "correct": false}, {"text": "n", "correct": true}, {"text": "n + 1", "correct": false}]}
+  ]
+}

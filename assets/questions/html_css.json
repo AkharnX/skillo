@@ -1,0 +1,21 @@
+{
+  "discipline": "html_css",
+  "questions": [
+    {"text": "Quelle balise définit un lien hypertexte ?", "type": "radio", "timeLimit": 15,
+     "choices": [{"text": "<link>", "correct": false}, {"text": "<a>", "correct": true}, {"text": "<href>", "correct": false}]},
+    {"text": "Quelle propriété CSS change la couleur du texte ?", "type": "radio", "timeLimit": 15,
+     "choices": [{"text": "font-color", "correct": false}, {"text": "text-color", "correct": false}, {"text": "color", "correct": true}]},
+    {"text": "Quelles balises sont sémantiques en HTML5 ? (plusieurs réponses)", "type": "checkbox", "timeLimit": 30,
+     "choices": [{"text": "<header>", "correct": true}, {"text": "<div>", "correct": false}, {"text": "<article>", "correct": true}, {"text": "<span>", "correct": false}]},
+    {"text": "Quel sélecteur cible un élément avec id=\"menu\" ?", "type": "radio", "timeLimit": 20,
+     "choices": [{"text": ".menu", "correct": false}, {"text": "#menu", "correct": true}, {"text": "menu", "correct": false}]},
+    {"text": "Quelles valeurs sont valides pour la propriété display ? (plusieurs réponses)", "type": "checkbox", "timeLimit": 30,
+     "choices": [{"text": "flex", "correct": true}, {"text": "grid", "correct": true}, {"text": "table-row-list", "correct": false}, {"text": "none", "correct": true}]},
+    {"text": "Quelle balise insère une image ?", "type": "radio", "timeLimit": 15,
+     "choices": [{"text": "<img>", "correct": true}, {"text": "<image>", "correct": false}, {"text": "<picture-src>", "correct": false}]},
+    {"text": "Dans le modèle de boîte CSS, quel est l'ordre de l'intérieur vers l'extérieur ?", "type": "radio", "timeLimit": 25,
+     "choices": [{"text": "margin, border, padding, content", "correct": false}, {"text": "content, padding, border, margin", "correct": true}, {"text": "content, margin, padding, border", "correct": false}]},
+    {"text": "Quelles affirmations sur Flexbox sont vraies ? (plusieurs réponses)", "type": "checkbox", "timeLimit": 30,
+     "choices": [{"text": "justify-content aligne sur l'axe principal", "correct": true}, {"text": "align-items aligne sur l'axe secondaire", "correct": true}, {"text": "flex-direction ne peut valoir que row", "correct": false}]}
+  ]
+}
