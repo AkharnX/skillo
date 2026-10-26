@@ -17,6 +17,20 @@ réussite.
 | 6 | Tableau de bord : derniers résultats, recherche par nom/prénom, filtre par année scolaire | `screens/admin/dashboard_screen.dart` |
 | 7 | Camemberts de réussite par discipline et camembert global par année | `screens/admin/stats_screen.dart` |
 
+## Captures d'écran (build web)
+
+| Connexion | Inscription | Accueil candidat |
+|---|---|---|
+| ![](docs/screenshots/01-connexion.png) | ![](docs/screenshots/02-inscription.png) | ![](docs/screenshots/03-accueil-candidat.png) |
+
+| Test chronométré | Résultat | Profil |
+|---|---|---|
+| ![](docs/screenshots/04-test.png) | ![](docs/screenshots/05-resultat.png) | ![](docs/screenshots/06-profil.png) |
+
+| Admin · tableau de bord | Admin · questions | Admin · statistiques |
+|---|---|---|
+| ![](docs/screenshots/07-admin-tableau-de-bord.png) | ![](docs/screenshots/08-admin-questions.png) | ![](docs/screenshots/09-admin-statistiques.png) |
+
 ## Lancer l'application
 
 Prérequis : [Flutter](https://docs.flutter.dev/get-started/install) 3.47 ou plus récent.
@@ -68,7 +82,7 @@ lib/
     └── admin/                coque, tableau de bord, questions, éditeur, import JSON, stats
 assets/questions/             questions par défaut (un JSON par discipline)
 docs/superpowers/             design et plan d'implémentation
-test/                         76 tests (logique, repositories, widgets)
+test/                         82 tests (logique, repositories, widgets)
 ```
 
 ### Règles métier
@@ -108,7 +122,7 @@ actuelles dans ce format.
 
 ```bash
 flutter analyze   # 0 problème
-flutter test      # 76 tests
+flutter test      # 82 tests
 ```
 
 Les repositories sont testés sur une base SQLite en mémoire, les écrans avec des tests de
