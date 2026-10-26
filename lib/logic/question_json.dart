@@ -34,9 +34,14 @@ ParsedQuestions parseQuestionsJson(String raw, {Discipline? expected}) {
   return parseQuestionsMap(decoded, expected: expected);
 }
 
-ParsedQuestions parseQuestionsMap(Map<String, dynamic> doc, {Discipline? expected}) {
+ParsedQuestions parseQuestionsMap(
+  Map<String, dynamic> doc, {
+  Discipline? expected,
+}) {
   final code = doc['discipline'];
-  if (code is! String) throw QuestionJsonException('Champ "discipline" manquant.');
+  if (code is! String) {
+    throw QuestionJsonException('Champ "discipline" manquant.');
+  }
   final Discipline discipline;
   try {
     discipline = Discipline.fromCode(code);
@@ -52,7 +57,9 @@ ParsedQuestions parseQuestionsMap(Map<String, dynamic> doc, {Discipline? expecte
   }
   final list = doc['questions'];
   if (list is! List || list.isEmpty) {
-    throw QuestionJsonException('Le champ "questions" doit être une liste non vide.');
+    throw QuestionJsonException(
+      'Le champ "questions" doit être une liste non vide.',
+    );
   }
   final questions = <Question>[];
   for (var i = 0; i < list.length; i++) {
@@ -62,7 +69,9 @@ ParsedQuestions parseQuestionsMap(Map<String, dynamic> doc, {Discipline? expecte
     }
     final question = _questionFromMap(item, discipline);
     final error = validateQuestion(question);
-    if (error != null) throw QuestionJsonException('Question ${i + 1} : $error');
+    if (error != null) {
+      throw QuestionJsonException('Question ${i + 1} : $error');
+    }
     questions.add(question);
   }
   return ParsedQuestions(discipline, questions);
@@ -71,18 +80,25 @@ ParsedQuestions parseQuestionsMap(Map<String, dynamic> doc, {Discipline? expecte
 Question _questionFromMap(Map<String, dynamic> m, Discipline discipline) {
   final typeCode = m['type'];
   final type = QuestionType.values.cast<QuestionType?>().firstWhere(
-        (t) => t!.code == typeCode,
-        orElse: () => null,
-      );
+    (t) => t!.code == typeCode,
+    orElse: () => null,
+  );
   if (type == null) {
-    throw QuestionJsonException('type "$typeCode" inconnu (radio ou checkbox).');
+    throw QuestionJsonException(
+      'type "$typeCode" inconnu (radio ou checkbox).',
+    );
   }
   final rawChoices = m['choices'];
   final choices = rawChoices is List
       ? rawChoices
-          .whereType<Map<String, dynamic>>()
-          .map((c) => Choice(text: '${c['text'] ?? ''}', correct: c['correct'] == true))
-          .toList()
+            .whereType<Map<String, dynamic>>()
+            .map(
+              (c) => Choice(
+                text: '${c['text'] ?? ''}',
+                correct: c['correct'] == true,
+              ),
+            )
+            .toList()
       : <Choice>[];
   final timeLimit = m['timeLimit'];
   return Question(

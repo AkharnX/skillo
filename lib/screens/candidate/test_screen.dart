@@ -14,7 +14,11 @@ import 'test_result_screen.dart';
 /// question, passage automatique à la suivante quand le temps est écoulé.
 /// Les questions sont chargées une fois pour toutes avant d'ouvrir l'écran.
 class TestScreen extends StatefulWidget {
-  const TestScreen({super.key, required this.discipline, required this.questions});
+  const TestScreen({
+    super.key,
+    required this.discipline,
+    required this.questions,
+  });
 
   final Discipline discipline;
   final List<Question> questions;
@@ -123,8 +127,13 @@ class _TestScreenState extends State<TestScreen> {
               child: Center(
                 child: Chip(
                   avatar: Icon(Icons.timer, color: urgent ? Colors.red : null),
-                  label: Text('$_remaining s',
-                      style: TextStyle(color: urgent ? Colors.red : null, fontWeight: FontWeight.bold)),
+                  label: Text(
+                    '$_remaining s',
+                    style: TextStyle(
+                      color: urgent ? Colors.red : null,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -140,13 +149,17 @@ class _TestScreenState extends State<TestScreen> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                Text('Question ${_index + 1} / $total',
-                    style: Theme.of(context).textTheme.labelLarge),
+                Text(
+                  'Question ${_index + 1} / $total',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
                 const SizedBox(height: 8),
                 Text(q.text, style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 4),
                 Text(
-                  q.type == QuestionType.radio ? 'Une seule réponse' : 'Plusieurs réponses possibles',
+                  q.type == QuestionType.radio
+                      ? 'Une seule réponse'
+                      : 'Plusieurs réponses possibles',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 16),
@@ -157,7 +170,12 @@ class _TestScreenState extends State<TestScreen> {
                     child: Column(
                       children: [
                         for (var i = 0; i < q.choices.length; i++)
-                          Card(child: RadioListTile<int>(value: i, title: Text(q.choices[i].text))),
+                          Card(
+                            child: RadioListTile<int>(
+                              value: i,
+                              title: Text(q.choices[i].text),
+                            ),
+                          ),
                       ],
                     ),
                   )
@@ -174,8 +192,12 @@ class _TestScreenState extends State<TestScreen> {
                 FilledButton.icon(
                   key: const Key('test-validate'),
                   onPressed: _next,
-                  icon: Icon(_index + 1 < total ? Icons.arrow_forward : Icons.check),
-                  label: Text(_index + 1 < total ? 'Valider' : 'Terminer le test'),
+                  icon: Icon(
+                    _index + 1 < total ? Icons.arrow_forward : Icons.check,
+                  ),
+                  label: Text(
+                    _index + 1 < total ? 'Valider' : 'Terminer le test',
+                  ),
                 ),
               ],
             ),

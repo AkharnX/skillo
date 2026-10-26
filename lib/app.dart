@@ -34,7 +34,9 @@ class ReineApp extends StatelessWidget {
         theme: ThemeData(
           colorSchemeSeed: const Color(0xFF5B3FD6),
           useMaterial3: true,
-          inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder()),
+          inputDecorationTheme: const InputDecorationTheme(
+            border: OutlineInputBorder(),
+          ),
         ),
         home: const HomeRouter(),
       ),

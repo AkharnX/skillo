@@ -32,7 +32,10 @@ class _LoginScreenState extends State<LoginScreen> {
       _busy = true;
       _error = null;
     });
-    final error = await context.read<AuthState>().login(_email.text, _password.text);
+    final error = await context.read<AuthState>().login(
+      _email.text,
+      _password.text,
+    );
     if (!mounted) return;
     setState(() {
       _busy = false;
@@ -54,33 +57,57 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(Icons.school, size: 64, color: Theme.of(context).colorScheme.primary),
+                  Icon(
+                    Icons.school,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   const SizedBox(height: 8),
-                  Text('Reine', textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineMedium),
-                  Text("Plateforme d'évaluation", textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    'Reine',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  Text(
+                    "Plateforme d'évaluation",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: 32),
                   TextFormField(
                     key: const Key('login-email'),
                     controller: _email,
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
-                    decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.mail)),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Champ obligatoire' : null,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.mail),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Champ obligatoire'
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     key: const Key('login-password'),
                     controller: _password,
                     obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Mot de passe', prefixIcon: Icon(Icons.lock)),
-                    validator: (v) => (v == null || v.isEmpty) ? 'Champ obligatoire' : null,
+                    decoration: const InputDecoration(
+                      labelText: 'Mot de passe',
+                      prefixIcon: Icon(Icons.lock),
+                    ),
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Champ obligatoire' : null,
                     onFieldSubmitted: (_) => _submit(),
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 12),
-                    Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                    Text(
+                      _error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 24),
                   FilledButton(

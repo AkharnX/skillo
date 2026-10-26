@@ -13,17 +13,32 @@ void main() {
   setUp(() async {
     app = await TestApp.create();
     await app.auth.register(
-      lastName: 'D', firstName: 'J', email: 'j@d.fr', password: 'x',
-      age: 20, address: 'a', motivation: Motivation.reconversion,
+      lastName: 'D',
+      firstName: 'J',
+      email: 'j@d.fr',
+      password: 'x',
+      age: 20,
+      address: 'a',
+      motivation: Motivation.reconversion,
     );
   });
   tearDown(() => app.close());
 
-  testWidgets('lists the 3 disciplines, with the score when already taken', (tester) async {
-    await app.results.save(TestResult(
-      userId: app.auth.user!.id, discipline: Discipline.algo, score: 3, total: 4,
-      percent: 75, passed: true, schoolYear: '2026-2027', takenAt: DateTime(2026, 10, 1),
-    ));
+  testWidgets('lists the 3 disciplines, with the score when already taken', (
+    tester,
+  ) async {
+    await app.results.save(
+      TestResult(
+        userId: app.auth.user!.id,
+        discipline: Discipline.algo,
+        score: 3,
+        total: 4,
+        percent: 75,
+        passed: true,
+        schoolYear: '2026-2027',
+        takenAt: DateTime(2026, 10, 1),
+      ),
+    );
     await tester.pumpWidget(app.wrap(const CandidateHomeScreen()));
     await tester.pumpAndSettle();
 
@@ -34,13 +49,16 @@ void main() {
     expect(find.text('Score : 3 / 4 (75 %)'), findsOneWidget);
   });
 
-  testWidgets('starting a test opens the TestScreen with the seeded questions', (tester) async {
-    await tester.pumpWidget(app.wrap(const CandidateHomeScreen()));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('start-java')));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'starting a test opens the TestScreen with the seeded questions',
+    (tester) async {
+      await tester.pumpWidget(app.wrap(const CandidateHomeScreen()));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('start-java')));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(TestScreen), findsOneWidget);
-    expect(find.textContaining('Question 1 /'), findsOneWidget);
-  });
+      expect(find.byType(TestScreen), findsOneWidget);
+      expect(find.textContaining('Question 1 /'), findsOneWidget);
+    },
+  );
 }

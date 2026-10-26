@@ -31,15 +31,15 @@ class TestApp {
 
   /// Enveloppe [home] avec les mêmes providers que l'application réelle.
   Widget wrap(Widget home) => MultiProvider(
-        providers: [
-          Provider<Database>.value(value: db),
-          Provider<UserRepository>.value(value: users),
-          Provider<QuestionRepository>.value(value: questions),
-          Provider<ResultRepository>.value(value: results),
-          ChangeNotifierProvider<AuthState>.value(value: auth),
-        ],
-        child: MaterialApp(home: home),
-      );
+    providers: [
+      Provider<Database>.value(value: db),
+      Provider<UserRepository>.value(value: users),
+      Provider<QuestionRepository>.value(value: questions),
+      Provider<ResultRepository>.value(value: results),
+      ChangeNotifierProvider<AuthState>.value(value: auth),
+    ],
+    child: MaterialApp(home: home),
+  );
 
   Future<void> close() => db.close();
 }

@@ -25,8 +25,14 @@ void main() {
 
   test('AppUser.isAdmin depends on role', () {
     final u = AppUser(
-      id: 1, role: 'admin', lastName: 'A', firstName: 'B', email: 'a@b.c',
-      age: 0, address: '', motivation: null,
+      id: 1,
+      role: 'admin',
+      lastName: 'A',
+      firstName: 'B',
+      email: 'a@b.c',
+      age: 0,
+      address: '',
+      motivation: null,
     );
     expect(u.isAdmin, isTrue);
     expect(u.fullName, 'B A');

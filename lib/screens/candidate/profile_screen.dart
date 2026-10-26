@@ -45,16 +45,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _busy = true);
     final auth = context.read<AuthState>();
     await context.read<UserRepository>().updateProfile(
-          auth.user!.id,
-          address: _address.text,
-          motivation: _motivation,
-        );
+      auth.user!.id,
+      address: _address.text,
+      motivation: _motivation,
+    );
     await auth.refresh();
     if (!mounted) return;
     setState(() => _busy = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profil mis à jour')),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Profil mis à jour')));
   }
 
   @override
@@ -76,12 +75,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 trailing: Text('${user.age} ans'),
               ),
               const Divider(),
-              Text('Mes résultats', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Mes résultats',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               FutureBuilder<List<TestResult>>(
                 future: _results,
                 builder: (context, snapshot) {
                   final byDiscipline = {
-                    for (final r in snapshot.data ?? const <TestResult>[]) r.discipline: r,
+                    for (final r in snapshot.data ?? const <TestResult>[])
+                      r.discipline: r,
                   };
                   return Column(
                     children: [
@@ -92,18 +95,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             byDiscipline[d] == null
                                 ? Icons.radio_button_unchecked
                                 : byDiscipline[d]!.passed
-                                    ? Icons.check_circle
-                                    : Icons.cancel,
+                                ? Icons.check_circle
+                                : Icons.cancel,
                             color: byDiscipline[d] == null
                                 ? null
                                 : byDiscipline[d]!.passed
-                                    ? Colors.green
-                                    : Colors.red,
+                                ? Colors.green
+                                : Colors.red,
                           ),
                           title: Text(d.label),
                           subtitle: byDiscipline[d] == null
                               ? null
-                              : Text('Passé le ${dateFormat.format(byDiscipline[d]!.takenAt)}'),
+                              : Text(
+                                  'Passé le ${dateFormat.format(byDiscipline[d]!.takenAt)}',
+                                ),
                           trailing: Text(
                             byDiscipline[d] == null
                                 ? 'Non passé'
@@ -115,7 +120,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
               const Divider(),
-              Text('Mes informations', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Mes informations',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 12),
               Form(
                 key: _formKey,
@@ -125,20 +133,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     TextFormField(
                       key: const Key('profile-address'),
                       controller: _address,
-                      decoration: const InputDecoration(labelText: 'Adresse postale'),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Champ obligatoire' : null,
+                      decoration: const InputDecoration(
+                        labelText: 'Adresse postale',
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Champ obligatoire'
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<Motivation>(
                       key: const Key('profile-motivation'),
                       initialValue: _motivation,
-                      decoration: const InputDecoration(labelText: 'Motivation'),
+                      decoration: const InputDecoration(
+                        labelText: 'Motivation',
+                      ),
                       items: [
                         for (final m in Motivation.values)
                           DropdownMenuItem(value: m, child: Text(m.label)),
                       ],
                       onChanged: (m) => setState(() => _motivation = m),
-                      validator: (m) => m == null ? 'Choisissez une motivation' : null,
+                      validator: (m) =>
+                          m == null ? 'Choisissez une motivation' : null,
                     ),
                     const SizedBox(height: 16),
                     FilledButton.icon(

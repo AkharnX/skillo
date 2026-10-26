@@ -28,9 +28,10 @@ class _CandidateHomeScreenState extends State<CandidateHomeScreen> {
 
   void _load() {
     final user = context.read<AuthState>().user!;
-    _results = context.read<ResultRepository>().forUser(user.id).then(
-          (list) => {for (final r in list) r.discipline: r},
-        );
+    _results = context
+        .read<ResultRepository>()
+        .forUser(user.id)
+        .then((list) => {for (final r in list) r.discipline: r});
   }
 
   Future<void> _start(Discipline d) async {
@@ -43,7 +44,9 @@ class _CandidateHomeScreenState extends State<CandidateHomeScreen> {
       return;
     }
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => TestScreen(discipline: d, questions: questions)),
+      MaterialPageRoute(
+        builder: (_) => TestScreen(discipline: d, questions: questions),
+      ),
     );
     if (mounted) setState(_load);
   }
@@ -60,9 +63,9 @@ class _CandidateHomeScreenState extends State<CandidateHomeScreen> {
             tooltip: 'Mon profil',
             icon: const Icon(Icons.person),
             onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ProfileScreen()),
-              );
+              await Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const ProfileScreen()));
               if (mounted) setState(_load);
             },
           ),
@@ -76,7 +79,9 @@ class _CandidateHomeScreenState extends State<CandidateHomeScreen> {
       body: FutureBuilder<Map<Discipline, TestResult>>(
         future: _results,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
           final results = snapshot.data!;
           return Center(
             child: ConstrainedBox(
@@ -84,7 +89,10 @@ class _CandidateHomeScreenState extends State<CandidateHomeScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Text('Choisissez une évaluation', style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    'Choisissez une évaluation',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 8),
                   for (final d in Discipline.values)
                     _DisciplineCard(
@@ -103,7 +111,11 @@ class _CandidateHomeScreenState extends State<CandidateHomeScreen> {
 }
 
 class _DisciplineCard extends StatelessWidget {
-  const _DisciplineCard({required this.discipline, required this.result, required this.onStart});
+  const _DisciplineCard({
+    required this.discipline,
+    required this.result,
+    required this.onStart,
+  });
 
   final Discipline discipline;
   final TestResult? result;
@@ -125,8 +137,10 @@ class _DisciplineCard extends StatelessWidget {
                 onPressed: onStart,
                 child: const Text('Passer le test'),
               )
-            : Icon(r.passed ? Icons.check_circle : Icons.cancel,
-                color: r.passed ? Colors.green : Colors.red),
+            : Icon(
+                r.passed ? Icons.check_circle : Icons.cancel,
+                color: r.passed ? Colors.green : Colors.red,
+              ),
       ),
     );
   }

@@ -18,7 +18,11 @@ void main() {
   tearDown(() => db.close());
 
   test('seeds exactly one admin account', () async {
-    final admins = await db.query('users', where: 'role = ?', whereArgs: ['admin']);
+    final admins = await db.query(
+      'users',
+      where: 'role = ?',
+      whereArgs: ['admin'],
+    );
     expect(admins.length, 1);
     expect(admins.single['email'], kAdminEmail);
     expect(admins.single['password_hash'], hashPassword(kAdminPassword));
@@ -43,7 +47,11 @@ void main() {
     );
     expect(rows, isNotEmpty);
     for (final r in rows) {
-      expect(r['n'] as int, greaterThanOrEqualTo(2), reason: 'question ${r['id']}');
+      expect(
+        r['n'] as int,
+        greaterThanOrEqualTo(2),
+        reason: 'question ${r['id']}',
+      );
     }
   });
 
@@ -56,7 +64,11 @@ void main() {
   test('reopening the same database does not duplicate the seed', () async {
     // Seed runs only when tables are empty: simulate by calling the seed twice.
     await seedIfEmpty(db);
-    final admins = await db.query('users', where: 'role = ?', whereArgs: ['admin']);
+    final admins = await db.query(
+      'users',
+      where: 'role = ?',
+      whereArgs: ['admin'],
+    );
     expect(admins.length, 1);
   });
 }

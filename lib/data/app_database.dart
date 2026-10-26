@@ -7,6 +7,7 @@ import 'db_factory.dart';
 import 'password.dart';
 
 export 'package:sqflite_common/sqlite_api.dart' show Database;
+
 export 'password.dart';
 
 /// Compte administrateur pré-existant (US4).
@@ -23,7 +24,10 @@ const _schemaVersion = 1;
 ///
 /// [factory] et [path] servent aux tests (base en mémoire). En production
 /// l'implémentation dépend de la plateforme (voir `db_factory.dart`).
-Future<Database> openAppDatabase({DatabaseFactory? factory, String? path}) async {
+Future<Database> openAppDatabase({
+  DatabaseFactory? factory,
+  String? path,
+}) async {
   final f = factory ?? platformDatabaseFactory();
   final dbPath = path ?? '${await f.getDatabasesPath()}/$_dbName';
   final db = await f.openDatabase(
@@ -92,7 +96,11 @@ Future<void> _createSchema(Database db) async {
 
 /// Insère le compte admin et les questions par défaut si les tables sont vides.
 Future<void> seedIfEmpty(Database db) async {
-  final admins = await db.query('users', where: 'role = ?', whereArgs: ['admin']);
+  final admins = await db.query(
+    'users',
+    where: 'role = ?',
+    whereArgs: ['admin'],
+  );
   if (admins.isEmpty) {
     await db.insert('users', {
       'role': 'admin',

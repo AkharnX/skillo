@@ -19,24 +19,44 @@ void main() {
   late AppUser martin;
 
   setUp(() async {
-    db = await openAppDatabase(factory: databaseFactoryFfi, path: inMemoryDatabasePath);
+    db = await openAppDatabase(
+      factory: databaseFactoryFfi,
+      path: inMemoryDatabasePath,
+    );
     results = ResultRepository(db);
     users = UserRepository(db);
     dupont = await users.register(
-      lastName: 'DUPONT', firstName: 'Jean', email: 'j@d.fr', password: 'x',
-      age: 20, address: '', motivation: Motivation.reconversion,
+      lastName: 'DUPONT',
+      firstName: 'Jean',
+      email: 'j@d.fr',
+      password: 'x',
+      age: 20,
+      address: '',
+      motivation: Motivation.reconversion,
     );
     martin = await users.register(
-      lastName: 'Martin', firstName: 'Alice', email: 'a@m.fr', password: 'x',
-      age: 21, address: '', motivation: Motivation.reorientation,
+      lastName: 'Martin',
+      firstName: 'Alice',
+      email: 'a@m.fr',
+      password: 'x',
+      age: 21,
+      address: '',
+      motivation: Motivation.reorientation,
     );
   });
   tearDown(() => db.close());
 
-  TestResult result(AppUser u, Discipline d, int score, DateTime at) => TestResult(
-        userId: u.id, discipline: d, score: score, total: 4,
-        percent: score * 25.0, passed: score >= 2,
-        schoolYear: at.month >= 9 ? '${at.year}-${at.year + 1}' : '${at.year - 1}-${at.year}',
+  TestResult result(AppUser u, Discipline d, int score, DateTime at) =>
+      TestResult(
+        userId: u.id,
+        discipline: d,
+        score: score,
+        total: 4,
+        percent: score * 25.0,
+        passed: score >= 2,
+        schoolYear: at.month >= 9
+            ? '${at.year}-${at.year + 1}'
+            : '${at.year - 1}-${at.year}',
         takenAt: at,
       );
 
@@ -44,7 +64,9 @@ void main() {
   final mar2026 = DateTime(2026, 3, 10);
 
   test('save returns the result with an id and forUser lists it', () async {
-    final saved = await results.save(result(dupont, Discipline.java, 3, oct2026));
+    final saved = await results.save(
+      result(dupont, Discipline.java, 3, oct2026),
+    );
     expect(saved.id, isNotNull);
     final mine = await results.forUser(dupont.id);
     expect(mine.length, 1);
@@ -72,13 +94,19 @@ void main() {
     expect(recent.map((r) => r.candidateName), ['Alice Martin', 'Jean DUPONT']);
   });
 
-  test('recent search is case-insensitive on last name or first name', () async {
-    await results.save(result(dupont, Discipline.java, 3, oct2026));
-    await results.save(result(martin, Discipline.java, 1, oct2026));
-    expect((await results.recent(search: 'dupont')).length, 1);
-    expect((await results.recent(search: 'ALI')).single.candidateName, 'Alice Martin');
-    expect((await results.recent(search: 'zzz')), isEmpty);
-  });
+  test(
+    'recent search is case-insensitive on last name or first name',
+    () async {
+      await results.save(result(dupont, Discipline.java, 3, oct2026));
+      await results.save(result(martin, Discipline.java, 1, oct2026));
+      expect((await results.recent(search: 'dupont')).length, 1);
+      expect(
+        (await results.recent(search: 'ALI')).single.candidateName,
+        'Alice Martin',
+      );
+      expect((await results.recent(search: 'zzz')), isEmpty);
+    },
+  );
 
   test('recent can be filtered by school year', () async {
     await results.save(result(dupont, Discipline.java, 3, mar2026));

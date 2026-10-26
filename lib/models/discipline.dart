@@ -13,7 +13,7 @@ enum Discipline {
   final String label;
 
   static Discipline fromCode(String code) => values.firstWhere(
-        (d) => d.code == code,
-        orElse: () => throw ArgumentError('Discipline inconnue : $code'),
-      );
+    (d) => d.code == code,
+    orElse: () => throw ArgumentError('Discipline inconnue : $code'),
+  );
 }

@@ -23,8 +23,13 @@ void main() {
 
     app.auth.logout();
     await app.auth.register(
-      lastName: 'D', firstName: 'J', email: 'j@d.fr', password: 'x',
-      age: 20, address: 'a', motivation: Motivation.reconversion,
+      lastName: 'D',
+      firstName: 'J',
+      email: 'j@d.fr',
+      password: 'x',
+      age: 20,
+      address: 'a',
+      motivation: Motivation.reconversion,
     );
     await tester.pumpAndSettle();
     expect(find.byType(CandidateHomeScreen), findsOneWidget);

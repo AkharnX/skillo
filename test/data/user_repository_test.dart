@@ -13,21 +13,26 @@ void main() {
   late UserRepository repo;
 
   setUp(() async {
-    db = await openAppDatabase(factory: databaseFactoryFfi, path: inMemoryDatabasePath);
+    db = await openAppDatabase(
+      factory: databaseFactoryFfi,
+      path: inMemoryDatabasePath,
+    );
     repo = UserRepository(db);
   });
   tearDown(() => db.close());
 
-  Future<AppUser> registerDupont({String email = 'jean@dupont.fr', String lastName = 'Dupont'}) =>
-      repo.register(
-        lastName: lastName,
-        firstName: 'Jean',
-        email: email,
-        password: 'secret',
-        age: 22,
-        address: '1 rue de Paris',
-        motivation: Motivation.reconversion,
-      );
+  Future<AppUser> registerDupont({
+    String email = 'jean@dupont.fr',
+    String lastName = 'Dupont',
+  }) => repo.register(
+    lastName: lastName,
+    firstName: 'Jean',
+    email: email,
+    password: 'secret',
+    age: 22,
+    address: '1 rue de Paris',
+    motivation: Motivation.reconversion,
+  );
 
   test('register then login returns the candidate', () async {
     final created = await registerDupont();

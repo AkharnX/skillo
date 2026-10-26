@@ -29,26 +29,26 @@ class TestResult {
   final String? candidateName;
 
   Map<String, Object?> toRow() => {
-        'user_id': userId,
-        'discipline': discipline.code,
-        'score': score,
-        'total': total,
-        'percent': percent,
-        'passed': passed ? 1 : 0,
-        'school_year': schoolYear,
-        'taken_at': takenAt.toIso8601String(),
-      };
+    'user_id': userId,
+    'discipline': discipline.code,
+    'score': score,
+    'total': total,
+    'percent': percent,
+    'passed': passed ? 1 : 0,
+    'school_year': schoolYear,
+    'taken_at': takenAt.toIso8601String(),
+  };
 
   factory TestResult.fromRow(Map<String, Object?> row) => TestResult(
-        id: row['id'] as int,
-        userId: row['user_id'] as int,
-        discipline: Discipline.fromCode(row['discipline'] as String),
-        score: row['score'] as int,
-        total: row['total'] as int,
-        percent: (row['percent'] as num).toDouble(),
-        passed: row['passed'] == 1,
-        schoolYear: row['school_year'] as String,
-        takenAt: DateTime.parse(row['taken_at'] as String),
-        candidateName: row['candidate_name'] as String?,
-      );
+    id: row['id'] as int,
+    userId: row['user_id'] as int,
+    discipline: Discipline.fromCode(row['discipline'] as String),
+    score: row['score'] as int,
+    total: row['total'] as int,
+    percent: (row['percent'] as num).toDouble(),
+    passed: row['passed'] == 1,
+    schoolYear: row['school_year'] as String,
+    takenAt: DateTime.parse(row['taken_at'] as String),
+    candidateName: row['candidate_name'] as String?,
+  );
 }

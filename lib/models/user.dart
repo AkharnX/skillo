@@ -26,13 +26,13 @@ class AppUser {
   String get fullName => '$firstName $lastName';
 
   factory AppUser.fromRow(Map<String, Object?> row) => AppUser(
-        id: row['id'] as int,
-        role: row['role'] as String,
-        lastName: row['last_name'] as String,
-        firstName: row['first_name'] as String,
-        email: row['email'] as String,
-        age: row['age'] as int,
-        address: row['address'] as String,
-        motivation: Motivation.fromLabel(row['motivation'] as String),
-      );
+    id: row['id'] as int,
+    role: row['role'] as String,
+    lastName: row['last_name'] as String,
+    firstName: row['first_name'] as String,
+    email: row['email'] as String,
+    age: row['age'] as int,
+    address: row['address'] as String,
+    motivation: Motivation.fromLabel(row['motivation'] as String),
+  );
 }

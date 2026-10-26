@@ -92,7 +92,9 @@ class ResultRepository {
 
   /// Réussites / échecs par discipline (toutes les disciplines sont présentes,
   /// même sans résultat). [schoolYear] null = toutes les années.
-  Future<Map<Discipline, PassStats>> statsByDiscipline({String? schoolYear}) async {
+  Future<Map<Discipline, PassStats>> statsByDiscipline({
+    String? schoolYear,
+  }) async {
     final rows = await _db.rawQuery(
       'SELECT discipline, '
       'SUM(CASE WHEN passed = 1 THEN 1 ELSE 0 END) AS passed, '
@@ -112,8 +114,14 @@ class ResultRepository {
   }
 
   /// Taux de réussite global de tous les candidats pour une année scolaire.
-  Future<PassStats> globalStats(String schoolYear) async {
-    final perDiscipline = await statsByDiscipline(schoolYear: schoolYear);
+  Future<PassStats> globalStats(String schoolYear) =>
+      _sum(statsByDiscipline(schoolYear: schoolYear));
+
+  /// Taux de réussite global, toutes années confondues.
+  Future<PassStats> globalStatsAllYears() => _sum(statsByDiscipline());
+
+  Future<PassStats> _sum(Future<Map<Discipline, PassStats>> stats) async {
+    final perDiscipline = await stats;
     var passed = 0;
     var failed = 0;
     for (final s in perDiscipline.values) {

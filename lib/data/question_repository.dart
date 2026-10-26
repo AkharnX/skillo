@@ -29,8 +29,14 @@ class QuestionRepository {
     );
     final choicesByQuestion = <int, List<Choice>>{};
     for (final c in cRows) {
-      choicesByQuestion.putIfAbsent(c['question_id'] as int, () => []).add(
-            Choice(id: c['id'] as int, text: c['text'] as String, correct: c['is_correct'] == 1),
+      choicesByQuestion
+          .putIfAbsent(c['question_id'] as int, () => [])
+          .add(
+            Choice(
+              id: c['id'] as int,
+              text: c['text'] as String,
+              correct: c['is_correct'] == 1,
+            ),
           );
     }
     return [
@@ -52,7 +58,11 @@ class QuestionRepository {
     return q.copyWith(id: id);
   }
 
-  Future<int> _saveIn(DatabaseExecutor txn, Question q, {bool forceInsert = false}) async {
+  Future<int> _saveIn(
+    DatabaseExecutor txn,
+    Question q, {
+    bool forceInsert = false,
+  }) async {
     final row = {
       'discipline': q.discipline.code,
       'text': q.text.trim(),
@@ -81,13 +91,19 @@ class QuestionRepository {
       _db.delete('questions', where: 'id = ?', whereArgs: [id]);
 
   /// Remplace toutes les questions d'une discipline (import JSON, US5).
-  Future<void> replaceDiscipline(Discipline discipline, List<Question> questions) =>
-      _db.transaction((txn) async {
-        await txn.delete('questions', where: 'discipline = ?', whereArgs: [discipline.code]);
-        for (final q in questions) {
-          await _saveIn(txn, q.copyWith(discipline: discipline), forceInsert: true);
-        }
-      });
+  Future<void> replaceDiscipline(
+    Discipline discipline,
+    List<Question> questions,
+  ) => _db.transaction((txn) async {
+    await txn.delete(
+      'questions',
+      where: 'discipline = ?',
+      whereArgs: [discipline.code],
+    );
+    for (final q in questions) {
+      await _saveIn(txn, q.copyWith(discipline: discipline), forceInsert: true);
+    }
+  });
 
   /// Recharge les questions par défaut livrées dans les assets.
   Future<void> resetFromDefaults(Discipline discipline) async {

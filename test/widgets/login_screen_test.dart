@@ -23,7 +23,10 @@ void main() {
   testWidgets('admin credentials log the admin in', (tester) async {
     await tester.pumpWidget(app.wrap(const LoginScreen()));
     await tester.enterText(find.byKey(const Key('login-email')), kAdminEmail);
-    await tester.enterText(find.byKey(const Key('login-password')), kAdminPassword);
+    await tester.enterText(
+      find.byKey(const Key('login-password')),
+      kAdminPassword,
+    );
     await tester.tap(find.byKey(const Key('login-submit')));
     await tester.pumpAndSettle();
     expect(app.auth.user?.isAdmin, isTrue);

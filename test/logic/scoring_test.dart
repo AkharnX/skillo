@@ -4,24 +4,28 @@ import 'package:reine/models/discipline.dart';
 import 'package:reine/models/question.dart';
 
 Question radio() => Question(
-      discipline: Discipline.java,
-      text: 'q',
-      type: QuestionType.radio,
-      timeLimitS: 10,
-      choices: [Choice(text: 'a'), Choice(text: 'b', correct: true), Choice(text: 'c')],
-    );
+  discipline: Discipline.java,
+  text: 'q',
+  type: QuestionType.radio,
+  timeLimitS: 10,
+  choices: [
+    Choice(text: 'a'),
+    Choice(text: 'b', correct: true),
+    Choice(text: 'c'),
+  ],
+);
 
 Question checkbox() => Question(
-      discipline: Discipline.java,
-      text: 'q',
-      type: QuestionType.checkbox,
-      timeLimitS: 10,
-      choices: [
-        Choice(text: 'a', correct: true),
-        Choice(text: 'b'),
-        Choice(text: 'c', correct: true),
-      ],
-    );
+  discipline: Discipline.java,
+  text: 'q',
+  type: QuestionType.checkbox,
+  timeLimitS: 10,
+  choices: [
+    Choice(text: 'a', correct: true),
+    Choice(text: 'b'),
+    Choice(text: 'c', correct: true),
+  ],
+);
 
 void main() {
   group('isCorrectAnswer', () {
@@ -53,7 +57,12 @@ void main() {
         userId: 7,
         discipline: Discipline.algo,
         questions: questions,
-        answers: [{1}, {0}, {0, 2}, {1}],
+        answers: [
+          {1},
+          {0},
+          {0, 2},
+          {1},
+        ],
         now: DateTime(2026, 10, 26),
       );
       expect(r.userId, 7);
@@ -71,7 +80,12 @@ void main() {
         userId: 7,
         discipline: Discipline.algo,
         questions: questions,
-        answers: [{1}, {0}, {0}, {1}],
+        answers: [
+          {1},
+          {0},
+          {0},
+          {1},
+        ],
         now: DateTime(2026, 10, 26),
       );
       expect(r.score, 1);

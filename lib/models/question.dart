@@ -45,9 +45,9 @@ class Question {
 
   /// Index des bonnes réponses dans [choices].
   Set<int> get correctIndexes => {
-        for (var i = 0; i < choices.length; i++)
-          if (choices[i].correct) i,
-      };
+    for (var i = 0; i < choices.length; i++)
+      if (choices[i].correct) i,
+  };
 
   Question copyWith({
     int? id,
@@ -56,13 +56,12 @@ class Question {
     QuestionType? type,
     int? timeLimitS,
     List<Choice>? choices,
-  }) =>
-      Question(
-        id: id ?? this.id,
-        discipline: discipline ?? this.discipline,
-        text: text ?? this.text,
-        type: type ?? this.type,
-        timeLimitS: timeLimitS ?? this.timeLimitS,
-        choices: choices ?? this.choices,
-      );
+  }) => Question(
+    id: id ?? this.id,
+    discipline: discipline ?? this.discipline,
+    text: text ?? this.text,
+    type: type ?? this.type,
+    timeLimitS: timeLimitS ?? this.timeLimitS,
+    choices: choices ?? this.choices,
+  );
 }

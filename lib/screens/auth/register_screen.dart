@@ -28,13 +28,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    for (final c in [_lastName, _firstName, _email, _age, _address, _password]) {
+    for (final c in [
+      _lastName,
+      _firstName,
+      _email,
+      _age,
+      _address,
+      _password,
+    ]) {
       c.dispose();
     }
     super.dispose();
   }
 
-  String? _required(String? v) => (v == null || v.trim().isEmpty) ? 'Champ obligatoire' : null;
+  String? _required(String? v) =>
+      (v == null || v.trim().isEmpty) ? 'Champ obligatoire' : null;
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -43,21 +51,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _error = null;
     });
     final error = await context.read<AuthState>().register(
-          lastName: _lastName.text,
-          firstName: _firstName.text,
-          email: _email.text,
-          password: _password.text,
-          age: int.parse(_age.text.trim()),
-          address: _address.text,
-          motivation: _motivation!,
-        );
+      lastName: _lastName.text,
+      firstName: _firstName.text,
+      email: _email.text,
+      password: _password.text,
+      age: int.parse(_age.text.trim()),
+      address: _address.text,
+      motivation: _motivation!,
+    );
     if (!mounted) return;
     setState(() {
       _busy = false;
       _error = error;
     });
     // Succès : l'AuthState notifie et le routeur affiche l'accueil candidat.
-    if (error == null && Navigator.of(context).canPop()) Navigator.of(context).pop();
+    if (error == null && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -96,7 +106,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     validator: (v) {
                       final req = _required(v);
                       if (req != null) return req;
-                      return _emailRegex.hasMatch(v!.trim()) ? null : 'Email invalide';
+                      return _emailRegex.hasMatch(v!.trim())
+                          ? null
+                          : 'Email invalide';
                     },
                   ),
                   const SizedBox(height: 12),
@@ -109,14 +121,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       final req = _required(v);
                       if (req != null) return req;
                       final n = int.tryParse(v!.trim());
-                      return (n == null || n < 10 || n > 120) ? 'Âge invalide' : null;
+                      return (n == null || n < 10 || n > 120)
+                          ? 'Âge invalide'
+                          : null;
                     },
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     key: const Key('register-address'),
                     controller: _address,
-                    decoration: const InputDecoration(labelText: 'Adresse postale'),
+                    decoration: const InputDecoration(
+                      labelText: 'Adresse postale',
+                    ),
                     validator: _required,
                   ),
                   const SizedBox(height: 12),
@@ -129,19 +145,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         DropdownMenuItem(value: m, child: Text(m.label)),
                     ],
                     onChanged: (m) => setState(() => _motivation = m),
-                    validator: (m) => m == null ? 'Choisissez une motivation' : null,
+                    validator: (m) =>
+                        m == null ? 'Choisissez une motivation' : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     key: const Key('register-password'),
                     controller: _password,
                     obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Mot de passe'),
+                    decoration: const InputDecoration(
+                      labelText: 'Mot de passe',
+                    ),
                     validator: _required,
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 12),
-                    Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                    Text(
+                      _error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 24),
                   FilledButton(
