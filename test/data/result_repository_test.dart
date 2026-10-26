@@ -139,4 +139,38 @@ void main() {
     expect(g.failed, 1);
     expect(g.rate, closeTo(0.667, 0.001));
   });
+
+  test('start marks the test as taken before any answer is saved', () async {
+    await results.start(dupont.id, Discipline.java, 4, oct2026);
+    expect(await results.hasTaken(dupont.id, Discipline.java), isTrue);
+    final mine = await results.forUser(dupont.id);
+    expect(mine.single.score, 0);
+    expect(mine.single.total, 4);
+    expect(mine.single.passed, isFalse);
+    expect(mine.single.schoolYear, '2026-2027');
+  });
+
+  test('start twice for the same test throws', () async {
+    await results.start(dupont.id, Discipline.java, 4, oct2026);
+    expect(
+      () => results.start(dupont.id, Discipline.java, 4, oct2026),
+      throwsA(isA<AlreadyTakenException>()),
+    );
+  });
+
+  test('save completes a started test, and a second save is refused', () async {
+    await results.start(dupont.id, Discipline.java, 4, oct2026);
+    final saved = await results.save(
+      result(dupont, Discipline.java, 3, oct2026),
+    );
+    expect(saved.id, isNotNull);
+    final mine = await results.forUser(dupont.id);
+    expect(mine.length, 1);
+    expect(mine.single.score, 3);
+    expect(mine.single.passed, isTrue);
+    expect(
+      () => results.save(result(dupont, Discipline.java, 4, oct2026)),
+      throwsA(isA<AlreadyTakenException>()),
+    );
+  });
 }

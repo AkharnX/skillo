@@ -19,6 +19,7 @@ class CandidateHomeScreen extends StatefulWidget {
 
 class _CandidateHomeScreenState extends State<CandidateHomeScreen> {
   late Future<Map<Discipline, TestResult>> _results;
+  bool _starting = false;
 
   @override
   void initState() {
@@ -35,21 +36,50 @@ class _CandidateHomeScreenState extends State<CandidateHomeScreen> {
   }
 
   Future<void> _start(Discipline d) async {
-    final questions = await context.read<QuestionRepository>().forDiscipline(d);
-    if (!mounted) return;
-    if (questions.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Aucune question disponible pour ${d.label}.')),
+    if (_starting) return; // évite un double tap
+    setState(() => _starting = true);
+    try {
+      final user = context.read<AuthState>().user!;
+      final questions = await context.read<QuestionRepository>().forDiscipline(
+        d,
       );
-      return;
+      if (!mounted) return;
+      if (questions.isEmpty) {
+        _snack('Aucune question disponible pour ${d.label}.');
+        return;
+      }
+      // Le test est marqué « commencé » avant d'ouvrir l'écran : un
+      // rechargement en cours de test ne permet pas de le repasser.
+      try {
+        await context.read<ResultRepository>().start(
+          user.id,
+          d,
+          questions.length,
+          DateTime.now(),
+        );
+      } on AlreadyTakenException {
+        if (mounted) _snack('Vous avez déjà passé le test ${d.label}.');
+        return;
+      }
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => TestScreen(discipline: d, questions: questions),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _starting = false;
+          _load();
+        });
+      }
     }
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => TestScreen(discipline: d, questions: questions),
-      ),
-    );
-    if (mounted) setState(_load);
   }
+
+  void _snack(String message) =>
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +128,7 @@ class _CandidateHomeScreenState extends State<CandidateHomeScreen> {
                     _DisciplineCard(
                       discipline: d,
                       result: results[d],
-                      onStart: () => _start(d),
+                      onStart: _starting ? null : () => _start(d),
                     ),
                 ],
               ),
@@ -119,7 +149,7 @@ class _DisciplineCard extends StatelessWidget {
 
   final Discipline discipline;
   final TestResult? result;
-  final VoidCallback onStart;
+  final VoidCallback? onStart;
 
   @override
   Widget build(BuildContext context) {

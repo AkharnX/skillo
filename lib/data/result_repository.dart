@@ -1,5 +1,6 @@
 import 'package:sqflite_common/sqlite_api.dart';
 
+import '../logic/school_year.dart';
 import '../models/discipline.dart';
 import '../models/test_result.dart';
 
@@ -26,10 +27,47 @@ class ResultRepository {
 
   final Database _db;
 
+  /// Marque le test comme commencé (US2) : une ligne « 0 / total, non
+  /// terminé » est écrite tout de suite. Ainsi, recharger la page ou fermer
+  /// l'application pendant le test ne permet pas de le repasser.
+  Future<void> start(
+    int userId,
+    Discipline discipline,
+    int total,
+    DateTime now,
+  ) async {
+    if (await hasTaken(userId, discipline)) throw AlreadyTakenException();
+    await _db.insert('results', {
+      'user_id': userId,
+      'discipline': discipline.code,
+      'score': 0,
+      'total': total,
+      'percent': 0.0,
+      'passed': 0,
+      'school_year': schoolYearFor(now),
+      'taken_at': now.toIso8601String(),
+      'finished': 0,
+    });
+  }
+
+  /// Enregistre le résultat final. Complète la ligne créée par [start] si
+  /// elle existe ; refuse si un résultat terminé existe déjà.
   Future<TestResult> save(TestResult r) async {
-    if (await hasTaken(r.userId, r.discipline)) throw AlreadyTakenException();
-    final id = await _db.insert('results', r.toRow());
-    return TestResult.fromRow({...r.toRow(), 'id': id});
+    final existing = await _db.query(
+      'results',
+      columns: ['id', 'finished'],
+      where: 'user_id = ? AND discipline = ?',
+      whereArgs: [r.userId, r.discipline.code],
+    );
+    final row = {...r.toRow(), 'finished': 1};
+    if (existing.isEmpty) {
+      final id = await _db.insert('results', row);
+      return TestResult.fromRow({...row, 'id': id});
+    }
+    if (existing.single['finished'] == 1) throw AlreadyTakenException();
+    final id = existing.single['id'] as int;
+    await _db.update('results', row, where: 'id = ?', whereArgs: [id]);
+    return TestResult.fromRow({...row, 'id': id});
   }
 
   Future<bool> hasTaken(int userId, Discipline discipline) async {

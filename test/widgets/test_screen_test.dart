@@ -109,4 +109,27 @@ void main() {
       isFalse,
     );
   });
+
+  testWidgets('a double click on Valider does not skip a question', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      app.wrap(
+        TestScreen(
+          discipline: Discipline.java,
+          questions: [q('Question A'), q('Question B'), q('Question C')],
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('test-validate')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('test-validate')));
+    await tester.pump();
+    expect(find.text('Question B'), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.byKey(const Key('test-validate')));
+    await tester.pump();
+    expect(find.text('Question C'), findsOneWidget);
+  });
 }

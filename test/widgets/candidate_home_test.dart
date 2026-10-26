@@ -61,4 +61,29 @@ void main() {
       expect(find.textContaining('Question 1 /'), findsOneWidget);
     },
   );
+
+  testWidgets('starting a test immediately counts it as taken (reload-proof)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app.wrap(const CandidateHomeScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('start-java')));
+    await tester.pumpAndSettle();
+    expect(find.byType(TestScreen), findsOneWidget);
+    expect(
+      await app.results.hasTaken(app.auth.user!.id, Discipline.java),
+      isTrue,
+    );
+  });
+
+  testWidgets('a double tap on "Passer le test" opens a single TestScreen', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app.wrap(const CandidateHomeScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('start-java')));
+    await tester.tap(find.byKey(const Key('start-java')));
+    await tester.pumpAndSettle();
+    expect(find.byType(TestScreen, skipOffstage: false), findsOneWidget);
+  });
 }

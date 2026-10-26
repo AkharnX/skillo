@@ -33,6 +33,7 @@ class _TestScreenState extends State<TestScreen> {
   final Set<int> _selected = {};
   final List<Set<int>> _answers = [];
   Timer? _timer;
+  Timer? _tapLock;
   bool _finishing = false;
 
   Question get _question => widget.questions[_index];
@@ -46,6 +47,7 @@ class _TestScreenState extends State<TestScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _tapLock?.cancel();
     super.dispose();
   }
 
@@ -63,7 +65,9 @@ class _TestScreenState extends State<TestScreen> {
   /// Enregistre la réponse courante et passe à la question suivante
   /// (ou termine le test).
   void _next() {
-    if (_finishing) return;
+    if (_finishing || _tapLock != null) return;
+    // Verrou court : un double clic sur « Valider » ne saute pas de question.
+    _tapLock = Timer(const Duration(milliseconds: 300), () => _tapLock = null);
     _timer?.cancel();
     _answers.add(Set.of(_selected));
     if (_index + 1 < widget.questions.length) {

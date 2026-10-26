@@ -86,7 +86,8 @@ Future<void> _createSchema(Database db) async {
       percent     REAL    NOT NULL,
       passed      INTEGER NOT NULL,
       school_year TEXT    NOT NULL,
-      taken_at    TEXT    NOT NULL
+      taken_at    TEXT    NOT NULL,
+      finished    INTEGER NOT NULL DEFAULT 1
     )''');
   // US2 : chaque test ne peut être passé qu'une seule fois.
   await db.execute(
