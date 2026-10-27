@@ -71,7 +71,7 @@ class GradientHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              if (trailing != null) trailing!,
+              ?trailing, // affiché seulement s'il est fourni
             ],
           ),
           if (child != null) ...[const SizedBox(height: 20), child!],
