@@ -1,11 +1,12 @@
 /// Profil candidat (US3) : identité, scores par discipline, modification de
 /// l'adresse et de la motivation.
 ///
-/// En haut, un en-tête en dégradé avec un bouton retour, le nom complet,
-/// l'email et l'âge. En dessous : une carte « Mes informations » avec le
-/// formulaire d'adresse et de motivation, puis une carte « Mes résultats »
-/// (une ligne par discipline, passée ou non). Nom, prénom, email et âge ne
-/// sont pas modifiables (cahier des charges).
+/// En haut, un en-tête encre ([InkHeader]) avec un bouton retour, le nom
+/// complet, l'email, les initiales dans un carré et deux tuiles (âge, tests
+/// réussis). En dessous : une carte « Mes informations » avec le formulaire
+/// d'adresse et de motivation, puis une carte « Mes résultats » (une ligne
+/// par discipline, passée ou non). Nom, prénom, email et âge ne sont pas
+/// modifiables (cahier des charges).
 library;
 
 import 'package:flutter/material.dart';
@@ -18,8 +19,10 @@ import '../../data/user_repository.dart';
 import '../../models/discipline.dart';
 import '../../models/motivation.dart';
 import '../../models/test_result.dart';
+import '../../models/user.dart';
 import '../../state/auth_state.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text.dart';
 import '../../widgets/widgets.dart';
 
 /// Écran de profil du candidat connecté.
@@ -100,103 +103,120 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return byDiscipline;
   }
 
+  /// Compte les tests réussis parmi les résultats.
+  int _countPassed(Map<Discipline, TestResult> byDiscipline) {
+    // Boucle sur les résultats : on accumule le nombre de ceux marqués
+    // « réussi ».
+    var passed = 0;
+    for (final result in byDiscipline.values) {
+      if (result.passed) passed++;
+    }
+    return passed;
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthState>().user!;
     return Scaffold(
-      body: Column(
-        children: [
-          // 1. En-tête en dégradé avec bouton retour et identité.
-          _buildHeader(user.fullName, user.email, user.age),
+      body: FutureBuilder<List<TestResult>>(
+        future: _results,
+        builder: (context, snapshot) {
+          // Tant que la base n'a pas répondu, la liste est vide : les lignes
+          // affichent « Non passé » et la tuile « Réussis » vaut 0.
+          final byDiscipline = _indexByDiscipline(
+            snapshot.data ?? const <TestResult>[],
+          );
+          return Column(
+            children: [
+              // 1. En-tête encre avec bouton retour et identité.
+              _buildHeader(user, _countPassed(byDiscipline)),
 
-          // 2. Contenu défilable, centré sur grand écran. Un
-          //    SingleChildScrollView (et non une ListView paresseuse) : les
-          //    deux cartes sont toujours construites, le formulaire reste
-          //    accessible même s'il dépasse de l'écran.
-          Expanded(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 640),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SectionTitle(
-                        title: 'Mes informations',
-                        subtitle: 'Adresse et motivation modifiables',
+              // 2. Contenu défilable, centré sur grand écran. Un
+              //    SingleChildScrollView (et non une ListView paresseuse) :
+              //    les deux cartes sont toujours construites, le formulaire
+              //    reste accessible même s'il dépasse de l'écran.
+              Expanded(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 640),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SectionTitle(
+                            title: 'Mes informations',
+                            subtitle: 'Adresse et motivation modifiables',
+                          ),
+                          const SizedBox(height: 12),
+                          _buildFormCard()
+                              .animate()
+                              .fadeIn(duration: 280.ms)
+                              .slideY(begin: 0.04, end: 0),
+                          const SizedBox(height: 24),
+                          const SectionTitle(
+                            title: 'Mes résultats',
+                            subtitle: 'Un test par discipline',
+                          ),
+                          const SizedBox(height: 12),
+                          _buildResultsCard(byDiscipline)
+                              .animate(delay: 80.ms)
+                              .fadeIn(duration: 280.ms)
+                              .slideY(begin: 0.04, end: 0),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      _buildFormCard()
-                          .animate()
-                          .fadeIn(duration: 300.ms)
-                          .slideY(begin: 0.05, end: 0),
-                      const SizedBox(height: 24),
-                      const SectionTitle(
-                        title: 'Mes résultats',
-                        subtitle: 'Un test par discipline',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildResultsCard()
-                          .animate(delay: 100.ms)
-                          .fadeIn(duration: 300.ms)
-                          .slideY(begin: 0.05, end: 0),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  /// En-tête : le dégradé est posé sur un conteneur englobant pour couvrir
-  /// aussi la barre d'état et la ligne « retour », puis [GradientHeader]
-  /// affiche le nom, l'email et l'âge.
-  Widget _buildHeader(String fullName, String email, int age) {
+  /// En-tête : la couleur encre est posée sur un conteneur englobant pour
+  /// couvrir aussi la barre d'état et la ligne « retour », puis [InkHeader]
+  /// affiche l'étiquette, le nom, l'email, les initiales et deux tuiles.
+  Widget _buildHeader(AppUser user, int passedCount) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryLight],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppColors.ink,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
       child: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            // Ligne « retour » + titre de l'écran, en blanc sur le dégradé.
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+            // Ligne « retour », en blanc sur l'encre.
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 4, 4, 0),
+              child: Row(children: [BackButton(color: Colors.white)]),
+            ),
+            InkHeader(
+              eyebrow: 'Mon profil',
+              title: user.fullName,
+              subtitle: user.email,
+              trailing: _InitialsAvatar(fullName: user.fullName),
               child: Row(
                 children: [
-                  const BackButton(color: Colors.white),
-                  const Text(
-                    'Mon profil',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                  Expanded(
+                    child: StatTile(
+                      label: 'Âge',
+                      value: '${user.age}',
+                      icon: Icons.cake_outlined,
+                      onDark: true,
                     ),
                   ),
-                ],
-              ),
-            ),
-            GradientHeader(
-              title: fullName,
-              subtitle: email,
-              trailing: _InitialsAvatar(fullName: fullName),
-              child: Row(
-                children: [
-                  _InfoPill(icon: Icons.cake_outlined, label: '$age ans'),
-                  const SizedBox(width: 8),
-                  const _InfoPill(
-                    icon: Icons.school_outlined,
-                    label: 'Candidat',
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: StatTile(
+                      label: 'Réussis',
+                      value: '$passedCount',
+                      icon: Icons.emoji_events_rounded,
+                      onDark: true,
+                    ),
                   ),
                 ],
               ),
@@ -208,27 +228,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// Carte des résultats : une ligne par discipline.
-  Widget _buildResultsCard() {
-    return Card(
-      child: FutureBuilder<List<TestResult>>(
-        future: _results,
-        builder: (context, snapshot) {
-          final byDiscipline = _indexByDiscipline(
-            snapshot.data ?? const <TestResult>[],
-          );
-
-          // Une ligne par discipline, séparées par un trait fin. On parcourt
-          // les disciplines dans l'ordre et on accumule ligne + séparateur.
-          final rows = <Widget>[];
-          for (var i = 0; i < Discipline.values.length; i++) {
-            final d = Discipline.values[i];
-            if (i > 0) rows.add(const Divider(height: 1, indent: 16));
-            rows.add(_ResultRow(discipline: d, result: byDiscipline[d]));
-          }
-          return Column(children: rows);
-        },
-      ),
-    );
+  Widget _buildResultsCard(Map<Discipline, TestResult> byDiscipline) {
+    // Une ligne par discipline, séparées par un trait fin. On parcourt les
+    // disciplines dans l'ordre et on accumule ligne + séparateur.
+    final rows = <Widget>[];
+    for (var i = 0; i < Discipline.values.length; i++) {
+      final d = Discipline.values[i];
+      if (i > 0) rows.add(const Divider(height: 1, indent: 16));
+      rows.add(_ResultRow(discipline: d, result: byDiscipline[d]));
+    }
+    return Card(child: Column(children: rows));
   }
 
   /// Carte du formulaire : adresse + motivation + bouton Enregistrer.
@@ -287,7 +296,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-/// Rond blanc translucide avec les initiales du candidat (ex. « JD »).
+/// Carré encre relevée avec les initiales du candidat en jaune signal
+/// (ex. « JD »).
 class _InitialsAvatar extends StatelessWidget {
   const _InitialsAvatar({required this.fullName});
 
@@ -313,50 +323,12 @@ class _InitialsAvatar extends StatelessWidget {
       height: 52,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.22),
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.inkRaised,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
         _initials(),
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-}
-
-/// Petite pastille translucide (icône + texte) posée sur le dégradé.
-class _InfoPill extends StatelessWidget {
-  const _InfoPill({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
+        style: AppText.display(18, color: AppColors.accent),
       ),
     );
   }
@@ -386,11 +358,8 @@ class _ResultRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  discipline.label,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 2),
+                Text(discipline.label, style: AppText.display(16)),
+                const SizedBox(height: 3),
                 Text(
                   r == null
                       ? 'En attente'
@@ -401,7 +370,7 @@ class _ResultRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Côté droit : score + badge, ou simple mention « Non passé ».
+          // Côté droit : score en chasse fixe + badge, ou « Non passé ».
           if (r == null)
             const Text(
               'Non passé',
@@ -416,7 +385,7 @@ class _ResultRow extends StatelessWidget {
               children: [
                 Text(
                   '${r.score} / ${r.total} (${r.percent.round()} %)',
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: AppText.mono(15, color: AppColors.ink),
                 ),
                 const SizedBox(height: 4),
                 StatusChip.passFail(r.passed),

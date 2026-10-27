@@ -1,9 +1,10 @@
 /// Écran de fin de test : score, pourcentage, réussite.
 ///
 /// Une carte centrée affiche un anneau de progression (percent_indicator)
-/// coloré en vert si le test est réussi, en rouge sinon, avec le pourcentage
-/// au centre. Dessous : le badge Réussi / Échoué, un petit récapitulatif
-/// (discipline, bonnes réponses, seuil, date) et un bouton de retour.
+/// vert si le test est réussi, rouge sinon, avec le pourcentage en Syne au
+/// centre. Dessous : le verdict en Syne, le badge Réussi / Échoué, puis un
+/// bloc récapitulatif ligne par ligne (discipline, bonnes réponses en chasse
+/// fixe, seuil, date) et un bouton de retour à l'accueil.
 library;
 
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../logic/scoring.dart';
 import '../../models/test_result.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text.dart';
 import '../../widgets/widgets.dart';
 
 /// Écran de résultat d'un test, affiché à la place de l'écran de test.
@@ -53,7 +55,7 @@ class TestResultScreen extends StatelessWidget {
                       children: [
                         // Anneau de score, animé de 0 au pourcentage obtenu.
                         CircularPercentIndicator(
-                          radius: 84,
+                          radius: 90,
                           lineWidth: 14,
                           percent: (result.percent / 100).clamp(0.0, 1.0),
                           animation: true,
@@ -61,30 +63,23 @@ class TestResultScreen extends StatelessWidget {
                           curve: Curves.easeOutCubic,
                           circularStrokeCap: CircularStrokeCap.round,
                           progressColor: color,
-                          backgroundColor: color.withValues(alpha: 0.12),
+                          backgroundColor: AppColors.border,
                           center: Text(
                             '${result.percent.round()} %',
-                            style: TextStyle(
-                              fontSize: 34,
-                              fontWeight: FontWeight.w800,
-                              color: color,
-                            ),
+                            style: AppText.display(36, color: color),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 22),
 
-                        // Verdict.
+                        // Verdict en Syne, badge, phrase d'explication.
                         Text(
                           result.passed ? 'Test réussi !' : 'Test échoué',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                          ),
+                          style: AppText.display(26),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         StatusChip.passFail(result.passed),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         Text(
                           result.passed
                               ? 'Bravo, vous avez atteint le seuil de réussite.'
@@ -93,38 +88,46 @@ class TestResultScreen extends StatelessWidget {
                           style: const TextStyle(color: AppColors.muted),
                         ),
                         const SizedBox(height: 24),
-                        const Divider(height: 1),
-                        const SizedBox(height: 8),
 
-                        // Récapitulatif ligne par ligne.
-                        _SummaryRow(
-                          icon: AppColors.iconForDiscipline(result.discipline),
-                          iconColor: AppColors.forDiscipline(result.discipline),
-                          label: 'Discipline',
-                          value: result.discipline.label,
-                        ),
-                        _SummaryRow(
-                          icon: Icons.check_circle_outline_rounded,
-                          iconColor: color,
-                          label: 'Bonnes réponses',
-                          value: '${result.score} / ${result.total}',
-                        ),
-                        _SummaryRow(
-                          icon: Icons.flag_outlined,
-                          iconColor: AppColors.primary,
-                          label: 'Seuil de réussite',
-                          value: '${kPassThresholdPercent.round()} %',
-                        ),
-                        _SummaryRow(
-                          icon: Icons.event_outlined,
-                          iconColor: AppColors.muted,
-                          label: 'Date',
-                          value: dateFormat.format(result.takenAt),
+                        // Récapitulatif : un bloc gris clair, une ligne par
+                        // information, les valeurs numériques en chasse fixe.
+                        _SummaryBlock(
+                          rows: [
+                            _SummaryRow(
+                              icon: AppColors.iconForDiscipline(
+                                result.discipline,
+                              ),
+                              iconColor: AppColors.forDiscipline(
+                                result.discipline,
+                              ),
+                              label: 'Discipline',
+                              value: result.discipline.label,
+                              mono: false,
+                            ),
+                            _SummaryRow(
+                              icon: Icons.check_circle_outline_rounded,
+                              iconColor: color,
+                              label: 'Bonnes réponses',
+                              value: '${result.score} / ${result.total}',
+                            ),
+                            _SummaryRow(
+                              icon: Icons.flag_outlined,
+                              iconColor: AppColors.ink,
+                              label: 'Seuil de réussite',
+                              value: '${kPassThresholdPercent.round()} %',
+                            ),
+                            _SummaryRow(
+                              icon: Icons.event_outlined,
+                              iconColor: AppColors.muted,
+                              label: 'Date',
+                              value: dateFormat.format(result.takenAt),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
+                ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0),
                 const SizedBox(height: 16),
 
                 // 2. Retour à l'accueil.
@@ -132,7 +135,7 @@ class TestResultScreen extends StatelessWidget {
                   onPressed: () => _goHome(context),
                   icon: const Icon(Icons.home_rounded),
                   label: const Text("Retour à l'accueil"),
-                ).animate(delay: 150.ms).fadeIn(duration: 300.ms),
+                ).animate(delay: 120.ms).fadeIn(duration: 280.ms),
               ],
             ),
           ),
@@ -142,13 +145,43 @@ class TestResultScreen extends StatelessWidget {
   }
 }
 
-/// Ligne du récapitulatif : icône, libellé à gauche, valeur en gras à droite.
+/// Bloc gris clair arrondi qui empile les lignes du récapitulatif, séparées
+/// par un trait fin.
+class _SummaryBlock extends StatelessWidget {
+  const _SummaryBlock({required this.rows});
+
+  /// Lignes à afficher, dans l'ordre.
+  final List<_SummaryRow> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    // Boucle sur les lignes : on accumule chaque ligne, précédée d'un
+    // séparateur à partir de la deuxième. Résultat : lignes et traits alternés.
+    final children = <Widget>[];
+    for (var i = 0; i < rows.length; i++) {
+      if (i > 0) children.add(const Divider(height: 1));
+      children.add(rows[i]);
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(children: children),
+    );
+  }
+}
+
+/// Ligne du récapitulatif : icône, libellé à gauche, valeur à droite (en
+/// chasse fixe pour les nombres et dates, en texte gras sinon).
 class _SummaryRow extends StatelessWidget {
   const _SummaryRow({
     required this.icon,
     required this.iconColor,
     required this.label,
     required this.value,
+    this.mono = true,
   });
 
   final IconData icon;
@@ -156,10 +189,13 @@ class _SummaryRow extends StatelessWidget {
   final String label;
   final String value;
 
+  /// Vrai quand la valeur est un nombre ou une date (police à chasse fixe).
+  final bool mono;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
           Icon(icon, size: 20, color: iconColor),
@@ -167,7 +203,15 @@ class _SummaryRow extends StatelessWidget {
           Expanded(
             child: Text(label, style: const TextStyle(color: AppColors.muted)),
           ),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
+          Text(
+            value,
+            style: mono
+                ? AppText.mono(15, color: AppColors.ink)
+                : const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                  ),
+          ),
         ],
       ),
     );

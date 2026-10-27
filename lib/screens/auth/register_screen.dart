@@ -1,12 +1,16 @@
 /// Écran d'inscription d'un candidat (US1).
 ///
-/// Le logo de l'application est dans la barre du haut, puis une carte
-/// blanche centrée (largeur maximale 440 px) contient le formulaire en deux
-/// parties : "Identité" (nom, prénom, âge, adresse) et "Compte" (email,
-/// motivation, mot de passe). Le formulaire est volontairement compact (nom
-/// et prénom côte à côte) pour tenir sur un écran sans défiler. Après une
-/// inscription réussie, l'utilisateur est connecté automatiquement et le
-/// routeur affiche l'accueil candidat.
+/// Mise en page « encre et signal » :
+/// - sur grand écran (largeur ≥ 840 px), une colonne encre à gauche (logo,
+///   bouton retour et la liste « Ce que vous allez faire ») et la carte du
+///   formulaire centrée à droite ;
+/// - sur téléphone, un bandeau encre très court (retour + logo) au-dessus du
+///   formulaire. Il est volontairement court, et le formulaire compact (nom et
+///   prénom côte à côte, âge et adresse côte à côte), pour que les champs
+///   tiennent sur un écran sans défiler.
+///
+/// Après une inscription réussie, l'utilisateur est connecté automatiquement
+/// et le routeur affiche l'accueil candidat.
 library;
 
 import 'package:flutter/material.dart';
@@ -16,6 +20,11 @@ import 'package:provider/provider.dart';
 import '../../models/motivation.dart';
 import '../../state/auth_state.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text.dart';
+import '../../widgets/widgets.dart';
+
+/// Largeur à partir de laquelle on affiche la colonne encre à gauche.
+const double _kSplitWidth = 840;
 
 /// Écran d'inscription.
 class RegisterScreen extends StatefulWidget {
@@ -136,37 +145,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // LayoutBuilder : la largeur disponible décide de la mise en page.
     return Scaffold(
-      appBar: AppBar(
-        // Logo de l'application à gauche du titre.
-        title: const Row(
-          children: [
-            _LogoSquare(),
-            SizedBox(width: 12),
-            // Expanded + ellipsis : le titre ne déborde jamais, même sur un
-            // écran étroit.
-            Expanded(
-              child: Text('Créer un compte', overflow: TextOverflow.ellipsis),
-            ),
-          ],
-        ),
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            // Carte du formulaire, en simple fondu (pas de glissement : le
-            // formulaire doit rester à sa place dès la première image pour
-            // que le champ mot de passe ne provoque pas de défilement).
-            child: _buildFormCard().animate().fadeIn(duration: 300.ms),
-          ),
-        ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= _kSplitWidth) return _buildWide();
+          return _buildNarrow();
+        },
       ),
     );
   }
 
+  /// Grand écran : colonne encre fixe à gauche, formulaire centré à droite.
+  Widget _buildWide() {
+    return Row(
+      children: [
+        const SizedBox(width: 380, child: _InkColumn()),
+        Expanded(
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(32),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: _buildFormCard(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Téléphone : bandeau encre court (retour + logo), puis le formulaire.
+  Widget _buildNarrow() {
+    return Column(
+      children: [
+        Container(
+          color: AppColors.ink,
+          child: const SafeArea(bottom: false, child: _InkTopBar()),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: _buildFormCard(),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   /// Construit la carte blanche avec le formulaire complet.
+  ///
+  /// Simple fondu à l'apparition (pas de glissement) : le formulaire doit
+  /// être à sa place dès la première image pour que les champs soient
+  /// cliquables immédiatement.
   Widget _buildFormCard() {
     return Card(
       child: Padding(
@@ -176,10 +215,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ---- Partie 1 : identité ----
-              const _GroupLabel(icon: Icons.badge_outlined, text: 'Identité'),
-              const SizedBox(height: 8),
-              // Nom et prénom côte à côte pour raccourcir le formulaire.
+              // En-tête de la carte : étiquette en capitales + titre en Syne.
+              Text('NOUVEAU CANDIDAT', style: AppText.label()),
+              const SizedBox(height: 6),
+              Text('Créer un compte', style: AppText.display(26)),
+              const SizedBox(height: 18),
+
+              // ---- Identité : nom et prénom côte à côte ----
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -205,34 +247,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                key: const Key('register-age'),
-                controller: _age,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Âge',
-                  prefixIcon: Icon(Icons.cake_outlined),
-                ),
-                validator: _validateAge,
+
+              // ---- Âge (étroit) et adresse (large) côte à côte ----
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: TextFormField(
+                      key: const Key('register-age'),
+                      controller: _age,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Âge'),
+                      validator: _validateAge,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 3,
+                    child: TextFormField(
+                      key: const Key('register-address'),
+                      controller: _address,
+                      decoration: const InputDecoration(
+                        labelText: 'Adresse postale',
+                      ),
+                      validator: _required,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                key: const Key('register-address'),
-                controller: _address,
-                decoration: const InputDecoration(
-                  labelText: 'Adresse postale',
-                  prefixIcon: Icon(Icons.home_outlined),
-                ),
-                validator: _required,
-              ),
-              const SizedBox(height: 20),
 
-              // ---- Partie 2 : compte ----
-              const _GroupLabel(
-                icon: Icons.account_circle_outlined,
-                text: 'Compte',
-              ),
-              const SizedBox(height: 8),
+              // ---- Compte : email, motivation, mot de passe ----
               TextFormField(
                 key: const Key('register-email'),
                 controller: _email,
@@ -290,7 +336,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 12),
                 _ErrorBanner(message: _error!),
               ],
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
 
               // Bouton d'envoi, désactivé pendant l'enregistrement.
               FilledButton(
@@ -311,34 +357,112 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 280.ms);
   }
 }
 
-/// Petit carré arrondi violet avec l'icône « école » : le logo de
-/// l'application, affiché dans la barre du haut.
-class _LogoSquare extends StatelessWidget {
-  const _LogoSquare();
+/// Bandeau encre du haut sur téléphone : bouton retour et logo, sur une
+/// seule ligne (une soixantaine de pixels) pour laisser toute la place au
+/// formulaire.
+class _InkTopBar extends StatelessWidget {
+  const _InkTopBar();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(12),
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(6, 6, 16, 10),
+      child: Row(
+        children: [
+          BackButton(color: Colors.white),
+          SizedBox(width: 4),
+          AppWordmark(onDark: true, size: 30),
+        ],
       ),
-      child: const Icon(Icons.school_rounded, size: 22, color: Colors.white),
     );
   }
 }
 
-/// Libellé de groupe de champs ("Identité", "Compte") : icône + texte en
-/// violet, pour structurer visuellement le long formulaire.
-class _GroupLabel extends StatelessWidget {
-  const _GroupLabel({required this.icon, required this.text});
+/// Colonne encre affichée à gauche sur grand écran : retour, logo, puis la
+/// liste « Ce que vous allez faire » en trois étapes.
+class _InkColumn extends StatelessWidget {
+  const _InkColumn();
 
+  /// Les trois étapes présentées au futur candidat : icône + texte.
+  static const List<(IconData, String)> _steps = [
+    (Icons.person_add_alt_1_rounded, 'Créer votre compte candidat'),
+    (Icons.timer_rounded, 'Passer trois tests chronométrés'),
+    (Icons.insights_rounded, 'Consulter vos scores immédiatement'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    // Boucle sur les étapes : on accumule une ligne (numéro, icône, texte)
+    // par étape, séparées par un espace vertical.
+    final stepRows = <Widget>[];
+    for (var i = 0; i < _steps.length; i++) {
+      final (icon, text) = _steps[i];
+      stepRows.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 14),
+          child: _StepRow(number: i + 1, icon: icon, text: text),
+        ),
+      );
+    }
+
+    return Container(
+      color: AppColors.ink,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(28, 12, 32, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Retour vers la connexion, aligné à gauche.
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: BackButton(color: Colors.white),
+              ),
+              const SizedBox(height: 28),
+              const Padding(
+                padding: EdgeInsets.only(left: 8),
+                child: AppWordmark(onDark: true, size: 40),
+              ),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Text(
+                  'CE QUE VOUS ALLEZ FAIRE',
+                  style: AppText.label(color: AppColors.accent),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: stepRows,
+                ),
+              ),
+              const Spacer(),
+            ],
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 300.ms);
+  }
+}
+
+/// Une étape de la colonne encre : carré encre relevée avec l'icône, puis
+/// le texte en blanc.
+class _StepRow extends StatelessWidget {
+  const _StepRow({
+    required this.number,
+    required this.icon,
+    required this.text,
+  });
+
+  /// Numéro de l'étape (1, 2, 3), affiché en petit sous l'icône.
+  final int number;
   final IconData icon;
   final String text;
 
@@ -346,15 +470,27 @@ class _GroupLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.primary),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: const TextStyle(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-            letterSpacing: 0.3,
+        Container(
+          width: 44,
+          height: 44,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.inkRaised,
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: Icon(icon, color: AppColors.accent, size: 22),
+        ),
+        const SizedBox(width: 14),
+        Text('0$number', style: AppText.mono(13, color: AppColors.inkMuted)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15.5,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],

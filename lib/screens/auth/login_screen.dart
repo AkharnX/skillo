@@ -1,19 +1,27 @@
 /// Écran de connexion (US4) : un même formulaire pour les candidats et
 /// l'administrateur, le rôle étant lu en base après authentification.
 ///
-/// Mise en page : un bloc "logo + nom de l'application" au-dessus d'une carte
-/// blanche centrée (largeur maximale 440 px) qui contient le formulaire.
-/// Sur téléphone la carte occupe toute la largeur, sur grand écran elle
-/// reste centrée et étroite pour rester lisible.
+/// Mise en page « encre et signal » :
+/// - sur grand écran (largeur ≥ 840 px), deux moitiés côte à côte : à gauche
+///   un panneau encre (logo, accroche en Syne, faux terminal qui liste les
+///   trois disciplines), à droite la carte blanche du formulaire ;
+/// - sur téléphone, un bandeau encre compact (logo + une ligne d'accroche)
+///   au-dessus du formulaire, qui défile si le clavier prend de la place.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/discipline.dart';
 import '../../state/auth_state.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text.dart';
+import '../../widgets/widgets.dart';
 import 'register_screen.dart';
+
+/// Largeur à partir de laquelle on passe à la mise en page en deux moitiés.
+const double _kSplitWidth = 840;
 
 /// Écran de connexion.
 class LoginScreen extends StatefulWidget {
@@ -90,44 +98,84 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // LayoutBuilder : on lit la largeur disponible pour choisir entre la mise
+    // en page en deux moitiés (bureau) et la mise en page empilée (mobile).
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 1. Bloc logo + nom + sous-titre, apparition en fondu.
-                  const _BrandBlock()
-                      .animate()
-                      .fadeIn(duration: 300.ms)
-                      .slideY(begin: 0.05, end: 0),
-                  const SizedBox(height: 28),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= _kSplitWidth) return _buildWide();
+          return _buildNarrow();
+        },
+      ),
+    );
+  }
 
-                  // 2. Carte blanche contenant le formulaire, avec un léger
-                  //    décalage d'apparition pour un effet "en cascade".
-                  _buildFormCard()
-                      .animate(delay: 100.ms)
-                      .fadeIn(duration: 300.ms)
-                      .slideY(begin: 0.05, end: 0),
-                  const SizedBox(height: 12),
-
-                  // 3. Lien vers l'inscription, sous la carte.
-                  TextButton(
-                    key: const Key('login-go-register'),
-                    onPressed: _goToRegister,
-                    child: const Text('Créer un compte candidat'),
-                  ),
-                ],
+  /// Grand écran : panneau encre à gauche, formulaire centré à droite.
+  Widget _buildWide() {
+    return Row(
+      children: [
+        const Expanded(child: _InkPanel(compact: false)),
+        Expanded(
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(32),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: _buildFormColumn(),
+                ),
               ),
             ),
           ),
         ),
-      ),
+      ],
+    );
+  }
+
+  /// Téléphone : bandeau encre compact en haut, puis le formulaire qui
+  /// défile en dessous.
+  Widget _buildNarrow() {
+    return Column(
+      children: [
+        // Le bandeau encre monte jusqu'en haut de l'écran (SafeArea à
+        // l'intérieur de la couleur) : la barre d'état est sur fond encre.
+        Container(
+          color: AppColors.ink,
+          child: const SafeArea(bottom: false, child: _InkPanel(compact: true)),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: _buildFormColumn(),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Carte du formulaire suivie du lien vers l'inscription. Apparition en
+  /// fondu + léger glissement, commune aux deux mises en page.
+  Widget _buildFormColumn() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildFormCard()
+            .animate()
+            .fadeIn(duration: 280.ms)
+            .slideY(begin: 0.04, end: 0),
+        const SizedBox(height: 10),
+        TextButton(
+          key: const Key('login-go-register'),
+          onPressed: _goToRegister,
+          child: const Text('Créer un compte candidat'),
+        ),
+      ],
     );
   }
 
@@ -141,17 +189,14 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Titre de la carte.
-              const Text(
-                'Connexion',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 4),
+              // Titre de la carte en Syne, puis une ligne d'explication.
+              Text('Connexion', style: AppText.display(26)),
+              const SizedBox(height: 6),
               const Text(
                 'Entrez vos identifiants pour continuer.',
                 style: TextStyle(color: AppColors.muted),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 22),
 
               // Champ email.
               TextFormField(
@@ -201,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
               const SizedBox(height: 20),
 
-              // Bouton principal : désactivé pendant l'appel à la base.
+              // Bouton principal (encre) : désactivé pendant l'appel à la base.
               FilledButton(
                 key: const Key('login-submit'),
                 onPressed: _busy ? null : _submit,
@@ -224,54 +269,126 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-/// Bloc d'identité visuelle : icône dans un carré arrondi violet, nom de
-/// l'application et sous-titre. Réutilisé en haut de la connexion.
-class _BrandBlock extends StatelessWidget {
-  const _BrandBlock();
+/// Panneau encre de présentation.
+///
+/// Deux variantes :
+/// - [compact] = false (bureau) : logo, grande accroche en Syne, phrase
+///   d'explication et faux terminal listant les disciplines ;
+/// - [compact] = true (mobile) : logo et une seule ligne d'accroche, pour
+///   laisser la place au formulaire.
+class _InkPanel extends StatelessWidget {
+  const _InkPanel({required this.compact});
+
+  /// Vrai pour la version courte affichée en haut sur téléphone.
+  final bool compact;
+
+  /// Description affichée dans le terminal pour chaque discipline : nombre
+  /// de questions et fourchette de temps par question, tels que livrés dans
+  /// `assets/questions/<code>.json`.
+  static const Map<Discipline, String> _specs = {
+    Discipline.java: '8 questions · 20-30 s/question',
+    Discipline.algo: '8 questions · 15-30 s/question',
+    Discipline.htmlCss: '8 questions · 15-30 s/question',
+  };
+
+  /// Lignes du faux terminal : la commande, une ligne colorée par discipline,
+  /// puis la règle « une tentative » en jaune signal.
+  List<TerminalLine> _terminalLines() {
+    // On commence par la commande tapée, en blanc.
+    final lines = <TerminalLine>[const TerminalLine(r'$ skillo test --list')];
+
+    // Boucle sur les disciplines : on ajoute une ligne « code  description »
+    // dans la couleur de la discipline. Le code est complété à 12 caractères
+    // pour que les descriptions soient alignées (police à chasse fixe).
+    for (final d in Discipline.values) {
+      lines.add(
+        TerminalLine(
+          '${d.code.padRight(12)}${_specs[d]}',
+          color: AppColors.forDiscipline(d),
+        ),
+      );
+    }
+
+    // Dernière ligne : la règle du jeu, en accent.
+    lines.add(
+      const TerminalLine(
+        '✓ 1 tentative par discipline',
+        color: AppColors.accent,
+      ),
+    );
+    return lines;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Carré arrondi de la couleur principale avec l'icône "école".
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(22),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.35),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
+    if (compact) return _buildCompact();
+    return _buildFull();
+  }
+
+  /// Version mobile : logo + une ligne d'accroche.
+  Widget _buildCompact() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AppWordmark(onDark: true, size: 34),
+          const SizedBox(height: 14),
+          Text(
+            'Évaluez vos compétences en conditions réelles.',
+            style: AppText.display(21, color: Colors.white),
           ),
-          child: const Icon(
-            Icons.school_rounded,
-            size: 40,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Skillo',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
-          ),
-        ),
-        const SizedBox(height: 2),
-        const Text(
-          "Plateforme d'évaluation",
-          textAlign: TextAlign.center,
-          style: TextStyle(color: AppColors.muted, fontSize: 15),
-        ),
-      ],
+        ],
+      ),
     );
+  }
+
+  /// Version bureau : contenu centré verticalement ; si la fenêtre est trop
+  /// basse, le panneau défile au lieu de déborder.
+  Widget _buildFull() {
+    return Container(
+      color: AppColors.ink,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 48,
+                  vertical: 40,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const AppWordmark(onDark: true, size: 44),
+                    const SizedBox(height: 44),
+                    Text(
+                      'Évaluez vos compétences en conditions réelles.',
+                      style: AppText.display(36, color: Colors.white),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Trois disciplines, un chrono par question, une seule '
+                      'tentative. Le résultat est affiché dès la dernière '
+                      'réponse.',
+                      style: TextStyle(
+                        color: AppColors.inkMuted,
+                        fontSize: 15.5,
+                        height: 1.45,
+                      ),
+                    ),
+                    const SizedBox(height: 36),
+                    TerminalCard(lines: _terminalLines()),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    ).animate().fadeIn(duration: 300.ms);
   }
 }
 

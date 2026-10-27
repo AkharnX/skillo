@@ -2,11 +2,13 @@
 /// question, passage automatique à la suivante quand le temps est écoulé.
 ///
 /// Les questions sont chargées une fois pour toutes avant d'ouvrir l'écran.
-/// En haut : la discipline, un compte à rebours bien visible (qui passe en
-/// orange sous 10 s puis en rouge sous 5 s) et une barre de progression
-/// « question i / n ». Au centre : la question dans une carte, puis les
-/// réponses sous forme de cartes cliquables (bord violet + fond pâle quand
-/// la réponse est cochée). En bas : le bouton « Valider ».
+/// En haut : une barre encre pleine largeur avec la discipline et le compte à
+/// rebours en pastille jaune signal (orange sous 10 s, rouge sous 5 s). Sous
+/// la barre, sur le fond clair : « Question i / n » en chasse fixe et une
+/// barre de progression encre. Au centre : la question dans une carte, puis
+/// les réponses sous forme de cartes cliquables (lettre A, B, C… à gauche,
+/// bord encre + fond jaune pâle quand la réponse est cochée). En bas : le
+/// bouton « Valider ».
 ///
 /// Le retour arrière est bloqué (PopScope) : on ne quitte un test qu'en le
 /// terminant.
@@ -23,6 +25,7 @@ import '../../models/discipline.dart';
 import '../../models/question.dart';
 import '../../state/auth_state.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text.dart';
 import '../../widgets/widgets.dart';
 import 'test_result_screen.dart';
 
@@ -176,14 +179,6 @@ class _TestScreenState extends State<TestScreen> {
     });
   }
 
-  /// Couleur du compte à rebours selon l'urgence : normale, orange sous 10 s,
-  /// rouge sous 5 s.
-  Color _timerColor() {
-    if (_remaining <= 5) return AppColors.danger;
-    if (_remaining <= 10) return AppColors.warning;
-    return AppColors.primary;
-  }
-
   @override
   Widget build(BuildContext context) {
     final q = _question;
@@ -192,44 +187,93 @@ class _TestScreenState extends State<TestScreen> {
     return PopScope(
       canPop: false, // pas de retour arrière pendant un test
       child: Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: Column(
-                children: [
-                  // 1. Bandeau du haut : discipline, chrono, progression.
-                  _buildTopBar(total),
+        body: Column(
+          children: [
+            // 1. Barre encre pleine largeur : discipline + chrono.
+            _buildTopBar(),
 
-                  // 2. Question et réponses (défilables).
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            // 2. Le reste, centré et limité à 640 px de large.
+            Expanded(
+              child: SafeArea(
+                top: false,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 640),
+                    child: Column(
                       children: [
-                        // La carte question + les réponses réapparaissent en
-                        // fondu à chaque changement de question (clé = index).
-                        _QuestionFadeIn(
-                          key: ValueKey(_index),
-                          child: _buildQuestionBlock(q),
+                        // 2a. « Question i / n » et barre de progression.
+                        _buildProgress(total),
+
+                        // 2b. Question et réponses (défilables).
+                        Expanded(
+                          child: ListView(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                            children: [
+                              // La carte question + les réponses
+                              // réapparaissent en fondu à chaque changement
+                              // de question (clé = index).
+                              _QuestionFadeIn(
+                                key: ValueKey(_index),
+                                child: _buildQuestionBlock(q),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // 2c. Bouton de validation, toujours visible en bas.
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: FilledButton.icon(
+                            key: const Key('test-validate'),
+                            onPressed: _next,
+                            icon: Icon(
+                              isLast
+                                  ? Icons.check_rounded
+                                  : Icons.arrow_forward_rounded,
+                            ),
+                            label: Text(
+                              isLast ? 'Terminer le test' : 'Valider',
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                  // 3. Bouton de validation, toujours visible en bas.
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: FilledButton.icon(
-                      key: const Key('test-validate'),
-                      onPressed: _next,
-                      icon: Icon(
-                        isLast
-                            ? Icons.check_rounded
-                            : Icons.arrow_forward_rounded,
-                      ),
-                      label: Text(isLast ? 'Terminer le test' : 'Valider'),
+  /// Barre encre du haut : avatar + « Test Java » en Syne blanc à gauche, le
+  /// compte à rebours en pastille à droite. La couleur encre monte derrière
+  /// la barre d'état ; le contenu est aligné sur la colonne de 640 px.
+  Widget _buildTopBar() {
+    return Container(
+      color: AppColors.ink,
+      child: SafeArea(
+        bottom: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+              child: Row(
+                children: [
+                  DisciplineAvatar(discipline: widget.discipline, size: 40),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Test ${widget.discipline.label}',
+                      style: AppText.display(20, color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 12),
+                  _CountdownPill(remaining: _remaining),
                 ],
               ),
             ),
@@ -239,59 +283,52 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  /// Bandeau du haut : avatar + nom de la discipline, compte à rebours,
-  /// puis « Question i / n » avec une barre de progression.
-  Widget _buildTopBar(int total) {
-    final color = AppColors.forDiscipline(widget.discipline);
+  /// Sous la barre : « Question i / n » (numéro en chasse fixe), le
+  /// pourcentage d'avancement à droite, et une barre de progression encre.
+  Widget _buildProgress(int total) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              DisciplineAvatar(discipline: widget.discipline, size: 40),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Test ${widget.discipline.label}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              _CountdownPill(remaining: _remaining, color: _timerColor()),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Text(
-                'Question ${_index + 1} / $total',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.muted,
+              // Un seul Text.rich : le mot en gris, le numéro en chasse fixe.
+              // Les tests cherchent le texte « Question 1 / … » d'un bloc.
+              Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: 'Question ',
+                      style: TextStyle(
+                        color: AppColors.muted,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.5,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '${_index + 1} / $total',
+                      style: AppText.mono(15, color: AppColors.ink),
+                    ),
+                  ],
                 ),
               ),
               const Spacer(),
               Text(
                 '${((_index + 1) * 100 / total).round()} %',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.muted,
-                ),
+                style: AppText.mono(13, color: AppColors.muted),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           ClipRRect(
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: (_index + 1) / total,
-              minHeight: 8,
-              color: color,
-              backgroundColor: color.withValues(alpha: 0.12),
+              minHeight: 6,
+              color: AppColors.ink,
+              backgroundColor: AppColors.border,
             ),
           ),
         ],
@@ -316,17 +353,12 @@ class _TestScreenState extends State<TestScreen> {
                   label: isRadio
                       ? 'Une seule réponse'
                       : 'Plusieurs réponses possibles',
-                  color: AppColors.primary,
+                  color: AppColors.ink,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  q.text,
-                  style: const TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w700,
-                    height: 1.35,
-                  ),
-                ),
+                const SizedBox(height: 14),
+                // Syne 22 avec un interlignage un peu plus large que celui
+                // des titres : un énoncé tient souvent sur plusieurs lignes.
+                Text(q.text, style: AppText.display(22).copyWith(height: 1.25)),
               ],
             ),
           ),
@@ -404,41 +436,46 @@ class _QuestionFadeIn extends StatelessWidget {
   }
 }
 
-/// Compte à rebours en forme de pastille : icône chrono + « 12 s ».
+/// Compte à rebours en forme de pastille : icône chrono + « 12 s » en chasse
+/// fixe (les chiffres ont tous la même largeur : rien ne bouge en décomptant).
 ///
-/// La couleur est fournie par l'écran (violet, orange ou rouge) et le
-/// changement de couleur est animé pour attirer l'œil sans brutalité.
+/// Couleurs selon l'urgence : jaune signal avec texte encre normalement,
+/// orange sous 10 s, rouge avec texte blanc sous 5 s. Le changement est animé
+/// pour attirer l'œil sans brutalité.
 class _CountdownPill extends StatelessWidget {
-  const _CountdownPill({required this.remaining, required this.color});
+  const _CountdownPill({required this.remaining});
 
   /// Secondes restantes.
   final int remaining;
 
-  /// Couleur d'urgence (texte et fond pâle).
-  final Color color;
+  /// Couleur de fond selon les secondes restantes.
+  Color get _background {
+    if (remaining <= 5) return AppColors.danger;
+    if (remaining <= 10) return AppColors.warning;
+    return AppColors.accent;
+  }
+
+  /// Couleur du texte et de l'icône : blanc sur rouge, encre sinon.
+  Color get _foreground => remaining <= 5 ? Colors.white : AppColors.ink;
 
   @override
   Widget build(BuildContext context) {
+    final fg = _foreground;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(14),
+        color: _background,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.timer_rounded, size: 20, color: color),
+          Icon(Icons.timer_rounded, size: 18, color: fg),
           const SizedBox(width: 6),
           Text(
             '$remaining s',
-            style: TextStyle(
-              color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
+            style: AppText.mono(18, color: fg, weight: FontWeight.w700),
           ),
         ],
       ),
@@ -448,10 +485,13 @@ class _CountdownPill extends StatelessWidget {
 
 /// Carte cliquable d'une réponse.
 ///
-/// Toute la carte réagit au clic (pas seulement le bouton radio ou la case),
-/// et la sélection est soulignée par un bord violet et un fond pâle. Pour une
-/// question radio, le [Radio] s'inscrit automatiquement dans le [RadioGroup]
-/// parent ; pour une question à choix multiples, on utilise un [Checkbox].
+/// De gauche à droite : la lettre du choix ([ChoiceLetter], qui passe en
+/// encre + jaune quand il est coché), le texte, puis le contrôle natif (radio
+/// ou case) qui garde la sémantique d'accessibilité. Toute la carte réagit
+/// au clic, et la sélection est soulignée par un bord encre et un fond jaune
+/// pâle. Pour une question radio, le [Radio] s'inscrit automatiquement dans
+/// le [RadioGroup] parent ; pour une question à choix multiples, on utilise
+/// un [Checkbox].
 class _ChoiceCard extends StatelessWidget {
   const _ChoiceCard({
     required this.index,
@@ -478,12 +518,8 @@ class _ChoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = selected
-        ? AppColors.primary
-        : AppColors.muted.withValues(alpha: 0.25);
-    final fillColor = selected
-        ? AppColors.primary.withValues(alpha: 0.08)
-        : AppColors.surface;
+    final borderColor = selected ? AppColors.ink : AppColors.border;
+    final fillColor = selected ? AppColors.accentSoft : AppColors.surface;
 
     return Material(
       color: fillColor,
@@ -493,13 +529,27 @@ class _ChoiceCard extends StatelessWidget {
         // Un clic sur la carte : une radio se coche toujours, une case bascule.
         onTap: () => onToggle(isRadio ? true : !selected),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(8, 6, 16, 6),
+          padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: borderColor, width: selected ? 1.8 : 1),
           ),
           child: Row(
             children: [
+              ChoiceLetter(index: index, selected: selected),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 16,
+                    height: 1.35,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: AppColors.ink,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
               // Le contrôle natif garde la sémantique (accessibilité) et
               // l'état visuel standard.
               if (isRadio)
@@ -509,17 +559,6 @@ class _ChoiceCard extends StatelessWidget {
                   value: selected,
                   onChanged: (v) => onToggle(v ?? false),
                 ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  text,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    color: selected ? AppColors.primary : null,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
