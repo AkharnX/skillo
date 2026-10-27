@@ -60,6 +60,8 @@ Sur le web, SQLite tourne en WebAssembly : les fichiers `web/sqflite_sw.js` et
   `sqflite_common_ffi_web` sur le web, `sqflite_common_ffi` en mémoire dans les tests.
 - **provider** pour partager la base, les repositories et l'utilisateur connecté (`AuthState`).
 - **fl_chart** pour les camemberts, **crypto** pour le hachage SHA-256 des mots de passe.
+- **flutter_animate** (animations d'apparition), **percent_indicator** (score circulaire),
+  police **Manrope** embarquée dans `assets/fonts/` (licence OFL).
 
 ```
 lib/
@@ -76,11 +78,16 @@ lib/
 │   └── question_json.dart    analyse / validation / export du JSON de questions
 ├── models/                   Discipline, Motivation, AppUser, Question, TestResult
 ├── state/auth_state.dart     utilisateur connecté (ChangeNotifier)
+├── theme/                    palette (AppColors) et thème Material 3 (buildAppTheme)
+├── widgets/                  composants partagés : GradientHeader, DisciplineAvatar,
+│                             StatusChip, EmptyState, SectionTitle
 └── screens/
     ├── auth/                 connexion, inscription
     ├── candidate/            accueil, test chronométré, résultat, profil
     └── admin/                coque, tableau de bord, questions, éditeur, import JSON, stats
 assets/questions/             questions par défaut (un JSON par discipline)
+docs/CONVENTIONS.md           règles de commentaires, de boucles simples et d'UI
+docs/BOUCLES.md               catalogue de toutes les boucles du code, expliquées une par une
 docs/superpowers/             design et plan d'implémentation
 test/                         82 tests (logique, repositories, widgets)
 ```
@@ -127,3 +134,10 @@ flutter test      # 82 tests
 
 Les repositories sont testés sur une base SQLite en mémoire, les écrans avec des tests de
 widgets (formulaires, timer du test, recherche, import JSON, camemberts).
+
+### Lisibilité du code
+
+Le code est entièrement commenté en français (voir `docs/CONVENTIONS.md`) : chaque fichier,
+classe et méthode explique ce qu'il fait et pourquoi. Toutes les boucles sont de simples
+`for` avec un accumulateur explicite, précédées d'un commentaire, et `docs/BOUCLES.md`
+les liste une par une avec une explication prête pour l'oral.
