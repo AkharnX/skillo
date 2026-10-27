@@ -24,6 +24,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -39,3 +40,13 @@ flutter:
     - family: JetBrainsMono
       fonts:
         - asset: assets/fonts/JetBrainsMono-Variable.ttf
+
+# Icône de l'application (générée par `dart run flutter_launcher_icons`).
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#FFD60A"
+  adaptive_icon_foreground: "assets/icon/adaptive_foreground.png"
+  web:
+    generate: false
