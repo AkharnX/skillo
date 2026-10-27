@@ -80,14 +80,22 @@ ThemeData buildAppTheme() {
       style: FilledButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     ),
 
