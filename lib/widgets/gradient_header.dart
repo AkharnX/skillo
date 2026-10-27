@@ -61,16 +61,16 @@ class InkHeader extends StatelessWidget {
           children: [
             // Halo jaune discret, décoratif, dans le coin supérieur droit.
             Positioned(
-              right: -60,
-              top: -80,
+              right: -120,
+              top: -140,
               child: Container(
-                width: 260,
-                height: 260,
+                width: 380,
+                height: 380,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.accent.withValues(alpha: 0.22),
+                      AppColors.accent.withValues(alpha: 0.10),
                       AppColors.accent.withValues(alpha: 0.0),
                     ],
                   ),

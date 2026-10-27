@@ -61,7 +61,10 @@ Sur le web, SQLite tourne en WebAssembly : les fichiers `web/sqflite_sw.js` et
 - **provider** pour partager la base, les repositories et l'utilisateur connecté (`AuthState`).
 - **fl_chart** pour les camemberts, **crypto** pour le hachage SHA-256 des mots de passe.
 - **flutter_animate** (animations d'apparition), **percent_indicator** (score circulaire),
-  police **Manrope** embarquée dans `assets/fonts/` (licence OFL).
+  **flutter_launcher_icons** (icône Android).
+- Identité visuelle « encre et signal » : panneaux bleu nuit, un seul accent jaune, titres en
+  **Syne**, chiffres en **JetBrains Mono**, texte en **Manrope** (polices embarquées dans
+  `assets/fonts/`, licence OFL). Palette et thème dans `lib/theme/`.
 
 ```
 lib/
@@ -78,9 +81,9 @@ lib/
 │   └── question_json.dart    analyse / validation / export du JSON de questions
 ├── models/                   Discipline, Motivation, AppUser, Question, TestResult
 ├── state/auth_state.dart     utilisateur connecté (ChangeNotifier)
-├── theme/                    palette (AppColors) et thème Material 3 (buildAppTheme)
-├── widgets/                  composants partagés : GradientHeader, DisciplineAvatar,
-│                             StatusChip, EmptyState, SectionTitle
+├── theme/                    palette (AppColors), styles de titres (AppText), thème (buildAppTheme)
+├── widgets/                  composants partagés : InkHeader, AppWordmark, ChoiceLetter, StatTile,
+│                             TerminalCard, DisciplineAvatar, StatusChip, EmptyState, SectionTitle
 └── screens/
     ├── auth/                 connexion, inscription
     ├── candidate/            accueil, test chronométré, résultat, profil

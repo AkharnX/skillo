@@ -427,7 +427,9 @@ class _InkColumn extends StatelessWidget {
                 padding: EdgeInsets.only(left: 8),
                 child: AppWordmark(onDark: true, size: 40),
               ),
-              const Spacer(),
+              // La liste des étapes suit directement le logo : pas de grand
+              // vide, le panneau reste lisible même sur un écran bas.
+              const SizedBox(height: 48),
               Padding(
                 padding: const EdgeInsets.only(left: 8),
                 child: Text(
