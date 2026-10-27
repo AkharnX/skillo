@@ -21,8 +21,8 @@ import 'theme/app_theme.dart';
 /// Les repositories sont créés une seule fois ici et récupérés dans les
 /// écrans avec `context.read<...>()`. Ainsi aucun écran n'ouvre lui-même la
 /// base : il demande simplement le repository dont il a besoin.
-class ReineApp extends StatelessWidget {
-  const ReineApp({super.key, required this.db});
+class SkilloApp extends StatelessWidget {
+  const SkilloApp({super.key, required this.db});
 
   /// Base SQLite déjà ouverte par `main()`.
   final Database db;
@@ -43,7 +43,7 @@ class ReineApp extends StatelessWidget {
         ChangeNotifierProvider<AuthState>(create: (_) => AuthState(users)),
       ],
       child: MaterialApp(
-        title: 'Reine',
+        title: 'Skillo',
         debugShowCheckedModeBanner: false,
         // Thème unique défini dans lib/theme/app_theme.dart : police Manrope,
         // palette AppColors, formes arrondies des cartes et boutons.

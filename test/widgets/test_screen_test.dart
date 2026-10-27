@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reine/models/discipline.dart';
-import 'package:reine/models/motivation.dart';
-import 'package:reine/models/question.dart';
-import 'package:reine/screens/candidate/test_result_screen.dart';
-import 'package:reine/screens/candidate/test_screen.dart';
+import 'package:skillo/models/discipline.dart';
+import 'package:skillo/models/motivation.dart';
+import 'package:skillo/models/question.dart';
+import 'package:skillo/screens/candidate/test_result_screen.dart';
+import 'package:skillo/screens/candidate/test_screen.dart';
 
 import 'test_app.dart';
 

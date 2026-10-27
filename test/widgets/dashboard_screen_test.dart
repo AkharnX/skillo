@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reine/screens/admin/dashboard_screen.dart';
+import 'package:skillo/screens/admin/dashboard_screen.dart';
 
 import 'admin_helpers.dart';
 import 'test_app.dart';

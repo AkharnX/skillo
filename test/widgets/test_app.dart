@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:reine/data/app_database.dart';
-import 'package:reine/data/question_repository.dart';
-import 'package:reine/data/result_repository.dart';
-import 'package:reine/data/user_repository.dart';
-import 'package:reine/state/auth_state.dart';
+import 'package:skillo/data/app_database.dart';
+import 'package:skillo/data/question_repository.dart';
+import 'package:skillo/data/result_repository.dart';
+import 'package:skillo/data/user_repository.dart';
+import 'package:skillo/state/auth_state.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Base en mémoire + providers, pour les tests de widgets.

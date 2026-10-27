@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reine/data/app_database.dart';
-import 'package:reine/screens/admin/admin_shell.dart';
-import 'package:reine/screens/admin/dashboard_screen.dart';
-import 'package:reine/screens/admin/questions_screen.dart';
-import 'package:reine/screens/admin/stats_screen.dart';
+import 'package:skillo/data/app_database.dart';
+import 'package:skillo/screens/admin/admin_shell.dart';
+import 'package:skillo/screens/admin/dashboard_screen.dart';
+import 'package:skillo/screens/admin/questions_screen.dart';
+import 'package:skillo/screens/admin/stats_screen.dart';
 
 import 'test_app.dart';
 

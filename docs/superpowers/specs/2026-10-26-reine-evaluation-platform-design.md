@@ -1,4 +1,4 @@
-# Reine — plateforme d'évaluation (design)
+# Skillo — plateforme d'évaluation (design)
 
 Source : backlog `New_BacklogFlutter4J_1.pdf` (7 user stories, projet Flutter en groupe de 4, EduScrum).
 
@@ -25,7 +25,7 @@ les questions, consulter les résultats et visualiser des taux de réussite.
 - Graphiques : `fl_chart` (camemberts).
 - Mots de passe : hash SHA-256 (`crypto`). Un mot de passe est demandé à l'inscription
   (le backlog n'en parle pas, mais il faut bien se reconnecter).
-- Compte admin pré-existant seedé en base : `admin@reine.app` / `admin123`.
+- Compte admin pré-existant seedé en base : `admin@skillo.app` / `admin123`.
 - Questions par défaut seedées depuis `assets/questions/{java,algo,html_css}.json`.
 
 ## Modèle de données (SQLite, schéma v1)

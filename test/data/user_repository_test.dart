@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reine/data/app_database.dart';
-import 'package:reine/data/user_repository.dart';
-import 'package:reine/models/motivation.dart';
-import 'package:reine/models/user.dart';
+import 'package:skillo/data/app_database.dart';
+import 'package:skillo/data/user_repository.dart';
+import 'package:skillo/models/motivation.dart';
+import 'package:skillo/models/user.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

@@ -1,4 +1,4 @@
-# Reine — plan d'implémentation
+# Skillo — plan d'implémentation
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Flutter 3.47 / Dart 3.13, `sqflite`, `sqflite_common_ffi`, `sqflite_common_ffi_web`, `provider`, `fl_chart`, `crypto`, `intl`.
 
-**Spec:** `docs/superpowers/specs/2026-10-26-reine-evaluation-platform-design.md`
+**Spec:** `docs/superpowers/specs/2026-10-26-skillo-evaluation-platform-design.md`
 
 ## Global Constraints
 
@@ -16,7 +16,7 @@
 - Motivations : « Poursuite d'études », « Réorientation », « Reconversion ».
 - Un seul résultat par `(user_id, discipline)` ; un seul compte par `(nom, email)` insensible à la casse.
 - Réussite = `percent >= 50`. Année scolaire = `YYYY-YYYY+1` si mois ≥ 9 sinon `YYYY-1-YYYY`.
-- Admin seedé : `admin@reine.app` / `admin123`.
+- Admin seedé : `admin@skillo.app` / `admin123`.
 - `flutter analyze` sans erreur, `flutter test` vert, `flutter build web` OK.
 
 ## Review Focus
@@ -35,7 +35,7 @@
 
 **Interfaces produits:**
 - `Future<Database> openAppDatabase({DatabaseFactory? factory, String? path})` — crée le schéma v1, seed admin + questions si tables vides. `path == inMemoryDatabasePath` pour les tests.
-- `const kAdminEmail = 'admin@reine.app'; const kAdminPassword = 'admin123';`
+- `const kAdminEmail = 'admin@skillo.app'; const kAdminPassword = 'admin123';`
 - `String hashPassword(String raw)` (SHA-256 hex) dans `lib/data/password.dart`.
 - `Future<Map<String, dynamic>> loadDefaultQuestionsJson(String discipline)` (lecture asset).
 

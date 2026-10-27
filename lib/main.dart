@@ -1,7 +1,7 @@
-/// Point d'entrée de l'application Reine.
+/// Point d'entrée de l'application Skillo.
 ///
 /// Ce fichier fait une seule chose : ouvrir la base de données locale puis
-/// lancer l'application racine [ReineApp] en lui passant cette base. Toute la
+/// lancer l'application racine [SkilloApp] en lui passant cette base. Toute la
 /// logique (écrans, état, thème) vit dans `lib/app.dart` et ses imports.
 library;
 
@@ -25,5 +25,5 @@ Future<void> main() async {
   final db = await openAppDatabase();
 
   // 3. On lance l'interface avec cette base partagée par tous les écrans.
-  runApp(ReineApp(db: db));
+  runApp(SkilloApp(db: db));
 }

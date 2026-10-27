@@ -256,7 +256,7 @@ class _BrandBlock extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         const Text(
-          'Reine',
+          'Skillo',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 30,

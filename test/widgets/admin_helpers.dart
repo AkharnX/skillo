@@ -1,7 +1,7 @@
-import 'package:reine/models/discipline.dart';
-import 'package:reine/models/motivation.dart';
-import 'package:reine/models/test_result.dart';
-import 'package:reine/models/user.dart';
+import 'package:skillo/models/discipline.dart';
+import 'package:skillo/models/motivation.dart';
+import 'package:skillo/models/test_result.dart';
+import 'package:skillo/models/user.dart';
 
 import 'test_app.dart';
 

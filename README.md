@@ -1,4 +1,4 @@
-# Reine — plateforme d'évaluation en ligne
+# Skillo — plateforme d'évaluation en ligne
 
 Application Flutter réalisée dans le cadre du projet **Flutter4J** (groupe de 4, EduScrum).
 Elle permet à des candidats de passer des tests (Java, Algorithmes, HTML/CSS) et à un
@@ -50,7 +50,7 @@ Sur le web, SQLite tourne en WebAssembly : les fichiers `web/sqflite_sw.js` et
 
 | Rôle | Email | Mot de passe |
 |------|-------|--------------|
-| Administrateur (créé automatiquement) | `admin@reine.app` | `admin123` |
+| Administrateur (créé automatiquement) | `admin@skillo.app` | `admin123` |
 | Candidat | à créer via « Créer un compte candidat » | au choix |
 
 ## Stack et architecture

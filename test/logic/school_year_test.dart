@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reine/logic/school_year.dart';
+import 'package:skillo/logic/school_year.dart';
 
 void main() {
   test('a date in October belongs to the school year starting that year', () {

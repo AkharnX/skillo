@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reine/models/discipline.dart';
-import 'package:reine/screens/admin/json_import_screen.dart';
-import 'package:reine/screens/admin/question_editor_screen.dart';
-import 'package:reine/screens/admin/questions_screen.dart';
+import 'package:skillo/models/discipline.dart';
+import 'package:skillo/screens/admin/json_import_screen.dart';
+import 'package:skillo/screens/admin/question_editor_screen.dart';
+import 'package:skillo/screens/admin/questions_screen.dart';
 
 import 'test_app.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reine/models/discipline.dart';
-import 'package:reine/models/motivation.dart';
-import 'package:reine/models/user.dart';
+import 'package:skillo/models/discipline.dart';
+import 'package:skillo/models/motivation.dart';
+import 'package:skillo/models/user.dart';
 
 void main() {
   test('Discipline codes and labels match the backlog', () {

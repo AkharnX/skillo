@@ -1,4 +1,4 @@
-package app.reine.reine
+package app.skillo.skillo
 
 import io.flutter.embedding.android.FlutterActivity
 

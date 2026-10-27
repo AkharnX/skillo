@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reine/logic/scoring.dart';
-import 'package:reine/models/discipline.dart';
-import 'package:reine/models/question.dart';
+import 'package:skillo/logic/scoring.dart';
+import 'package:skillo/models/discipline.dart';
+import 'package:skillo/models/question.dart';
 
 Question radio() => Question(
   discipline: Discipline.java,

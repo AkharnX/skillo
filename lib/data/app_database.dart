@@ -1,7 +1,7 @@
 /// Ouverture de la base SQLite, création du schéma et données initiales.
 ///
 /// Ce fichier est le point d'entrée de la couche « données » :
-///  1. [openAppDatabase] ouvre (ou crée) le fichier `reine.db` ;
+///  1. [openAppDatabase] ouvre (ou crée) le fichier `skillo.db` ;
 ///  2. [_createSchema] crée les 4 tables (`users`, `questions`, `choices`,
 ///     `results`) et les index d'unicité la première fois ;
 ///  3. [seedIfEmpty] insère le compte admin et les questions par défaut
@@ -25,7 +25,7 @@ export 'password.dart';
 
 /// Email du compte administrateur pré-existant (US4). L'admin n'a pas de
 /// formulaire d'inscription : son compte est inséré par [seedIfEmpty].
-const kAdminEmail = 'admin@reine.app';
+const kAdminEmail = 'admin@skillo.app';
 
 /// Mot de passe de l'admin. Il est haché avant d'être stocké (voir
 /// `password.dart`), seul son hash est en base.
@@ -37,7 +37,7 @@ const kAdminPassword = 'admin123';
 const kDisciplineCodes = ['java', 'algo', 'html_css'];
 
 /// Nom du fichier SQLite sur le disque (ou dans le stockage du navigateur).
-const _dbName = 'reine.db';
+const _dbName = 'skillo.db';
 
 /// Version du schéma. À incrémenter si on modifie les tables, pour déclencher
 /// une migration (`onUpgrade`) sur les bases déjà installées.
@@ -170,7 +170,7 @@ Future<void> seedIfEmpty(Database db) async {
     await db.insert('users', {
       'role': 'admin',
       'last_name': 'Admin',
-      'first_name': 'Reine',
+      'first_name': 'Skillo',
       'email': kAdminEmail,
       'password_hash': hashPassword(kAdminPassword),
       'age': 0,

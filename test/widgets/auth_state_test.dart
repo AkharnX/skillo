@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reine/data/app_database.dart';
-import 'package:reine/models/motivation.dart';
+import 'package:skillo/data/app_database.dart';
+import 'package:skillo/models/motivation.dart';
 
 import 'test_app.dart';
 
