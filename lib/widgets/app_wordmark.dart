@@ -1,4 +1,4 @@
-/// Logo de l'application : un carré jaune avec un « S » en Syne, suivi du
+/// Logo de l'application : un carré jaune avec un « S » en Space Grotesk, suivi du
 /// nom « Skillo ». Utilisé sur les écrans de connexion et d'inscription.
 library;
 

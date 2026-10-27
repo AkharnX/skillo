@@ -63,8 +63,11 @@ Sur le web, SQLite tourne en WebAssembly : les fichiers `web/sqflite_sw.js` et
 - **flutter_animate** (animations d'apparition), **percent_indicator** (score circulaire),
   **flutter_launcher_icons** (icône Android).
 - Identité visuelle « encre et signal » : panneaux bleu nuit, un seul accent jaune, titres en
-  **Syne**, chiffres en **JetBrains Mono**, texte en **Manrope** (polices embarquées dans
-  `assets/fonts/`, licence OFL). Palette et thème dans `lib/theme/`.
+  **Space Grotesk**, texte et chiffres clés en **Manrope**, chrono et terminal en
+  **JetBrains Mono** (polices embarquées dans `assets/fonts/`, licence OFL). Palette et thème
+  dans `lib/theme/`.
+- Pas de service worker sur le web (`web/flutter_bootstrap.js`) : chaque chargement prend la
+  dernière version publiée, aucun ancien build ne reste en cache chez les testeurs.
 
 ```
 lib/

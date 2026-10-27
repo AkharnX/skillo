@@ -1,8 +1,8 @@
 /// Écran de fin de test : score, pourcentage, réussite.
 ///
 /// Une carte centrée affiche un anneau de progression (percent_indicator)
-/// vert si le test est réussi, rouge sinon, avec le pourcentage en Syne au
-/// centre. Dessous : le verdict en Syne, le badge Réussi / Échoué, puis un
+/// vert si le test est réussi, rouge sinon, avec le pourcentage en Space Grotesk au
+/// centre. Dessous : le verdict en Space Grotesk, le badge Réussi / Échoué, puis un
 /// bloc récapitulatif ligne par ligne (discipline, bonnes réponses en chasse
 /// fixe, seuil, date) et un bouton de retour à l'accueil.
 library;
@@ -66,16 +66,16 @@ class TestResultScreen extends StatelessWidget {
                           backgroundColor: AppColors.border,
                           center: Text(
                             '${result.percent.round()} %',
-                            style: AppText.display(36, color: color),
+                            style: AppText.number(34, color: color),
                           ),
                         ),
                         const SizedBox(height: 22),
 
-                        // Verdict en Syne, badge, phrase d'explication.
+                        // Verdict en Space Grotesk, badge, phrase d'explication.
                         Text(
                           result.passed ? 'Test réussi !' : 'Test échoué',
                           textAlign: TextAlign.center,
-                          style: AppText.display(26),
+                          style: AppText.display(24),
                         ),
                         const SizedBox(height: 10),
                         StatusChip.passFail(result.passed),
@@ -206,7 +206,7 @@ class _SummaryRow extends StatelessWidget {
           Text(
             value,
             style: mono
-                ? AppText.mono(15, color: AppColors.ink)
+                ? AppText.number(15, color: AppColors.ink)
                 : const TextStyle(
                     fontWeight: FontWeight.w800,
                     color: AppColors.ink,

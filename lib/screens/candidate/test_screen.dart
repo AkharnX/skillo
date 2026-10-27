@@ -204,10 +204,13 @@ class _TestScreenState extends State<TestScreen> {
                         // 2a. « Question i / n » et barre de progression.
                         _buildProgress(total),
 
-                        // 2b. Question et réponses (défilables).
+                        // 2b. Question, réponses puis bouton de validation,
+                        //     dans la même colonne défilable : le bouton
+                        //     suit directement la dernière réponse au lieu
+                        //     d'être collé en bas de l'écran.
                         Expanded(
                           child: ListView(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                             children: [
                               // La carte question + les réponses
                               // réapparaissent en fondu à chaque changement
@@ -216,24 +219,20 @@ class _TestScreenState extends State<TestScreen> {
                                 key: ValueKey(_index),
                                 child: _buildQuestionBlock(q),
                               ),
+                              const SizedBox(height: 20),
+                              FilledButton.icon(
+                                key: const Key('test-validate'),
+                                onPressed: _next,
+                                icon: Icon(
+                                  isLast
+                                      ? Icons.check_rounded
+                                      : Icons.arrow_forward_rounded,
+                                ),
+                                label: Text(
+                                  isLast ? 'Terminer le test' : 'Valider',
+                                ),
+                              ),
                             ],
-                          ),
-                        ),
-
-                        // 2c. Bouton de validation, toujours visible en bas.
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          child: FilledButton.icon(
-                            key: const Key('test-validate'),
-                            onPressed: _next,
-                            icon: Icon(
-                              isLast
-                                  ? Icons.check_rounded
-                                  : Icons.arrow_forward_rounded,
-                            ),
-                            label: Text(
-                              isLast ? 'Terminer le test' : 'Valider',
-                            ),
                           ),
                         ),
                       ],
@@ -248,7 +247,7 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  /// Barre encre du haut : avatar + « Test Java » en Syne blanc à gauche, le
+  /// Barre encre du haut : avatar + « Test Java » en blanc à gauche, le
   /// compte à rebours en pastille à droite. La couleur encre monte derrière
   /// la barre d'état ; le contenu est aligné sur la colonne de 640 px.
   Widget _buildTopBar() {
@@ -263,12 +262,12 @@ class _TestScreenState extends State<TestScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
               child: Row(
                 children: [
-                  DisciplineAvatar(discipline: widget.discipline, size: 40),
+                  DisciplineAvatar(discipline: widget.discipline, size: 36),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Test ${widget.discipline.label}',
-                      style: AppText.display(20, color: Colors.white),
+                      style: AppText.display(17, color: Colors.white),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -283,7 +282,7 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  /// Sous la barre : « Question i / n » (numéro en chasse fixe), le
+  /// Sous la barre : « Question i / n » (numéro en gras), le
   /// pourcentage d'avancement à droite, et une barre de progression encre.
   Widget _buildProgress(int total) {
     return Padding(
@@ -293,7 +292,7 @@ class _TestScreenState extends State<TestScreen> {
         children: [
           Row(
             children: [
-              // Un seul Text.rich : le mot en gris, le numéro en chasse fixe.
+              // Un seul Text.rich : le mot en gris, le numéro en encre gras.
               // Les tests cherchent le texte « Question 1 / … » d'un bloc.
               Text.rich(
                 TextSpan(
@@ -302,14 +301,13 @@ class _TestScreenState extends State<TestScreen> {
                       text: 'Question ',
                       style: TextStyle(
                         color: AppColors.muted,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13.5,
-                        letterSpacing: 0.6,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
                       ),
                     ),
                     TextSpan(
                       text: '${_index + 1} / $total',
-                      style: AppText.mono(15, color: AppColors.ink),
+                      style: AppText.number(14, color: AppColors.ink),
                     ),
                   ],
                 ),
@@ -317,7 +315,7 @@ class _TestScreenState extends State<TestScreen> {
               const Spacer(),
               Text(
                 '${((_index + 1) * 100 / total).round()} %',
-                style: AppText.mono(13, color: AppColors.muted),
+                style: AppText.number(13, color: AppColors.muted),
               ),
             ],
           ),
@@ -356,9 +354,9 @@ class _TestScreenState extends State<TestScreen> {
                   color: AppColors.ink,
                 ),
                 const SizedBox(height: 14),
-                // Syne 22 avec un interlignage un peu plus large que celui
+                // Space Grotesk 20 avec un interlignage un peu plus large que celui
                 // des titres : un énoncé tient souvent sur plusieurs lignes.
-                Text(q.text, style: AppText.display(22).copyWith(height: 1.25)),
+                Text(q.text, style: AppText.display(20).copyWith(height: 1.3)),
               ],
             ),
           ),

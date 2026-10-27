@@ -182,7 +182,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   Widget build(BuildContext context) {
     final isNew = widget.question == null;
     return Scaffold(
-      // Le thème met le titre en Syne.
+      // Le thème met le titre en Space Grotesk.
       appBar: AppBar(
         title: Text(
           isNew
@@ -340,7 +340,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   }
 }
 
-/// Carte de formulaire : titre en Syne, ligne d'aide optionnelle, puis le
+/// Carte de formulaire : titre en Space Grotesk, ligne d'aide optionnelle, puis le
 /// contenu, avec une légère animation d'apparition.
 class _FormCard extends StatelessWidget {
   const _FormCard({required this.title, this.hint, required this.child});

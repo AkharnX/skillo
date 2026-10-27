@@ -189,12 +189,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         bottom: false,
         child: Column(
           children: [
-            // Ligne « retour », en blanc sur l'encre.
-            const Padding(
-              padding: EdgeInsets.fromLTRB(4, 4, 4, 0),
-              child: Row(children: [BackButton(color: Colors.white)]),
+            // Ligne « retour », en blanc sur l'encre, alignée sur la même
+            // colonne de 640 px que le reste de l'écran.
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 640),
+                child: const Padding(
+                  padding: EdgeInsets.fromLTRB(10, 4, 4, 0),
+                  child: Row(children: [BackButton(color: Colors.white)]),
+                ),
+              ),
             ),
             InkHeader(
+              maxContentWidth: 640,
               eyebrow: 'Mon profil',
               title: user.fullName,
               subtitle: user.email,
@@ -370,7 +377,7 @@ class _ResultRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Côté droit : score en chasse fixe + badge, ou « Non passé ».
+          // Côté droit : score en Space Grotesk + badge, ou « Non passé ».
           if (r == null)
             const Text(
               'Non passé',
@@ -385,7 +392,7 @@ class _ResultRow extends StatelessWidget {
               children: [
                 Text(
                   '${r.score} / ${r.total} (${r.percent.round()} %)',
-                  style: AppText.mono(15, color: AppColors.ink),
+                  style: AppText.number(15, color: AppColors.ink),
                 ),
                 const SizedBox(height: 4),
                 StatusChip.passFail(r.passed),

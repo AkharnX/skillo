@@ -1,5 +1,5 @@
 /// Tuile de statistique : une étiquette en capitales, un grand chiffre en
-/// chasse fixe et une icône. Utilisée sur le tableau de bord admin et dans
+/// Space Grotesk et une icône. Utilisée sur le tableau de bord admin et dans
 /// les en-têtes (tests passés, réussite…).
 library;
 
@@ -53,7 +53,7 @@ class StatTile extends StatelessWidget {
             Icon(icon, size: 20, color: onDark ? AppColors.accent : color),
             const SizedBox(height: 10),
           ],
-          Text(value, style: AppText.mono(26, color: valueColor)),
+          Text(value, style: AppText.number(28, color: valueColor)),
           const SizedBox(height: 2),
           Text(label.toUpperCase(), style: AppText.label(color: labelColor)),
         ],

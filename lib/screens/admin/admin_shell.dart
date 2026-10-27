@@ -89,6 +89,7 @@ class _AdminShellState extends State<AdminShell> {
                 children: [
                   InkHeader(
                     roundedBottom: false,
+                    maxContentWidth: 900,
                     eyebrow: 'Espace admin',
                     title: _titles[_index],
                     subtitle: _subtitles[_index],

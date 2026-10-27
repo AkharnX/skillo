@@ -3,7 +3,7 @@
 ///
 /// Mise en page « encre et signal » :
 /// - sur grand écran (largeur ≥ 840 px), deux moitiés côte à côte : à gauche
-///   un panneau encre (logo, accroche en Syne, faux terminal qui liste les
+///   un panneau encre (logo, accroche en Space Grotesk, faux terminal qui liste les
 ///   trois disciplines), à droite la carte blanche du formulaire ;
 /// - sur téléphone, un bandeau encre compact (logo + une ligne d'accroche)
 ///   au-dessus du formulaire, qui défile si le clavier prend de la place.
@@ -189,8 +189,8 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Titre de la carte en Syne, puis une ligne d'explication.
-              Text('Connexion', style: AppText.display(26)),
+              // Titre de la carte en Space Grotesk, puis une ligne d'explication.
+              Text('Connexion', style: AppText.display(24)),
               const SizedBox(height: 6),
               const Text(
                 'Entrez vos identifiants pour continuer.',
@@ -272,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
 /// Panneau encre de présentation.
 ///
 /// Deux variantes :
-/// - [compact] = false (bureau) : logo, grande accroche en Syne, phrase
+/// - [compact] = false (bureau) : logo, grande accroche en Space Grotesk, phrase
 ///   d'explication et faux terminal listant les disciplines ;
 /// - [compact] = true (mobile) : logo et une seule ligne d'accroche, pour
 ///   laisser la place au formulaire.
@@ -366,7 +366,7 @@ class _InkPanel extends StatelessWidget {
                     const SizedBox(height: 44),
                     Text(
                       'Évaluez vos compétences en conditions réelles.',
-                      style: AppText.display(36, color: Colors.white),
+                      style: AppText.display(30, color: Colors.white),
                     ),
                     const SizedBox(height: 16),
                     const Text(

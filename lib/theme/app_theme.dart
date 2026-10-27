@@ -51,14 +51,14 @@ ThemeData buildAppTheme() {
     scaffoldBackgroundColor: AppColors.background,
     splashFactory: InkSparkle.splashFactory,
 
-    // Barre d'application plate, fondue dans le fond, titre en Syne.
+    // Barre d'application plate, fondue dans le fond, titre en Space Grotesk.
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.background,
       foregroundColor: AppColors.ink,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
-      titleTextStyle: AppText.display(22),
+      titleTextStyle: AppText.display(19),
     ),
 
     // Cartes blanches, bord fin, sans ombre.

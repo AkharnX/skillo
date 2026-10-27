@@ -365,7 +365,6 @@ class _QuestionCard extends StatelessWidget {
                         _InfoChip(
                           icon: Icons.timer_outlined,
                           label: '${q.timeLimitS} s',
-                          mono: true,
                         ),
                         _InfoChip(
                           icon: Icons.format_list_bulleted,
@@ -376,8 +375,9 @@ class _QuestionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Actions.
-              Column(
+              // Actions, côte à côte pour garder la carte basse.
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
                     tooltip: 'Modifier',
@@ -403,16 +403,12 @@ class _QuestionCard extends StatelessWidget {
   }
 }
 
-/// Puce d'information : icône grise + texte court sur fond pâle. Le texte
-/// passe en chasse fixe quand c'est un nombre (temps limite).
+/// Puce d'information : icône grise + texte court sur fond pâle.
 class _InfoChip extends StatelessWidget {
-  const _InfoChip({required this.icon, required this.label, this.mono = false});
+  const _InfoChip({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
-
-  /// Vrai pour afficher le texte en JetBrains Mono (chiffres).
-  final bool mono;
 
   @override
   Widget build(BuildContext context) {
@@ -429,13 +425,11 @@ class _InfoChip extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: mono
-                ? AppText.mono(12, color: AppColors.text)
-                : const TextStyle(
-                    color: AppColors.text,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+            style: const TextStyle(
+              color: AppColors.text,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),

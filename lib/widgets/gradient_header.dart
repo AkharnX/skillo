@@ -14,7 +14,7 @@ import '../theme/app_text.dart';
 /// continuent de fonctionner.
 typedef GradientHeader = InkHeader;
 
-/// Panneau d'en-tête sur fond encre, avec un titre en Syne, un sous-titre
+/// Panneau d'en-tête sur fond encre, avec un titre en Space Grotesk, un sous-titre
 /// optionnel, un widget à droite (avatar, bouton) et un contenu optionnel
 /// sous le texte. Un halo jaune très discret dans le coin supérieur droit
 /// donne de la profondeur sans dégradé criard.
@@ -27,6 +27,7 @@ class InkHeader extends StatelessWidget {
     this.trailing,
     this.child,
     this.roundedBottom = true,
+    this.maxContentWidth,
   });
 
   /// Titre principal (ex. « Bonjour Marie »).
@@ -47,6 +48,11 @@ class InkHeader extends StatelessWidget {
   /// Arrondit le bas du panneau (faux quand il est collé à une barre
   /// latérale).
   final bool roundedBottom;
+
+  /// Largeur maximale du contenu (texte, tuiles). Quand elle est donnée, le
+  /// contenu est centré dans cette largeur pour s'aligner sur la colonne de
+  /// l'écran (ex. 640 px côté candidat) ; sinon il occupe toute la largeur.
+  final double? maxContentWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +83,13 @@ class InkHeader extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 24, 22, 28),
+            Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: maxContentWidth ?? double.infinity,
+                ),
+                child: Padding(
+              padding: const EdgeInsets.fromLTRB(22, 22, 22, 26),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -98,7 +109,7 @@ class InkHeader extends StatelessWidget {
                             ],
                             Text(
                               title,
-                              style: AppText.display(28, color: Colors.white),
+                              style: AppText.display(26, color: Colors.white),
                             ),
                             if (subtitle != null) ...[
                               const SizedBox(height: 6),
@@ -118,6 +129,8 @@ class InkHeader extends StatelessWidget {
                   ),
                   if (child != null) ...[const SizedBox(height: 20), child!],
                 ],
+              ),
+                ),
               ),
             ),
           ],

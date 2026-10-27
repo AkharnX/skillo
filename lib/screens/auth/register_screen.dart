@@ -215,10 +215,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // En-tête de la carte : étiquette en capitales + titre en Syne.
+              // En-tête de la carte : étiquette en capitales + titre en Space Grotesk.
               Text('NOUVEAU CANDIDAT', style: AppText.label()),
               const SizedBox(height: 6),
-              Text('Créer un compte', style: AppText.display(26)),
+              Text('Créer un compte', style: AppText.display(24)),
               const SizedBox(height: 18),
 
               // ---- Identité : nom et prénom côte à côte ----

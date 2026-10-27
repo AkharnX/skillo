@@ -22,7 +22,7 @@ class SectionTitle extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: AppText.display(19)),
+        Text(title, style: AppText.display(18)),
         if (subtitle != null)
           Text(subtitle!, style: const TextStyle(color: AppColors.muted)),
       ],

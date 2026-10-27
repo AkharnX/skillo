@@ -105,7 +105,7 @@ class _StatsScreenState extends State<StatsScreen> {
         return Scaffold(
           body: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 960),
+              constraints: const BoxConstraints(maxWidth: 900),
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
@@ -182,38 +182,54 @@ class _StatsScreenState extends State<StatsScreen> {
     ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
   }
 
-  /// Les trois anneaux de discipline : trois colonnes à partir de 700 px,
-  /// une seule colonne sur téléphone.
+  /// Les trois anneaux de discipline : trois colonnes de même hauteur à
+  /// partir de 700 px, une seule colonne (cartes empilées) sur téléphone.
   Widget _buildDisciplineGrid(_StatsData data) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        const spacing = 12.0;
-        final columns = constraints.maxWidth >= 700 ? 3 : 1;
-        final cardWidth =
-            (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        final threeColumns = constraints.maxWidth >= 700;
 
-        // Une carte par discipline, toutes de la même largeur.
+        // Une carte par discipline, dans l'ordre des disciplines.
         final cards = <Widget>[];
         for (final d in Discipline.values) {
           final stats = data.byDiscipline[d]!;
           cards.add(
-            SizedBox(
-              width: cardWidth,
-              child: _DonutCard(
-                leading: DisciplineAvatar(discipline: d, size: 40),
-                title: d.label,
-                caption: _label(d.label, stats),
-                stats: stats,
-                size: 150,
-                rateSize: 28,
-              ),
+            _DonutCard(
+              leading: DisciplineAvatar(discipline: d, size: 40),
+              title: d.label,
+              caption: _label(d.label, stats),
+              stats: stats,
+              size: 150,
+              rateSize: 28,
             ),
           );
         }
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
-          children: cards,
+
+        // Sur téléphone : les cartes les unes sous les autres.
+        if (!threeColumns) {
+          final column = <Widget>[];
+          for (var i = 0; i < cards.length; i++) {
+            if (i > 0) column.add(const SizedBox(height: 12));
+            column.add(cards[i]);
+          }
+          return Column(
+            children: column,
+          ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
+        }
+
+        // Sur grand écran : une ligne, chaque carte prend un tiers de la
+        // largeur. IntrinsicHeight aligne le bas des trois cartes même si une
+        // légende tient sur deux lignes.
+        final row = <Widget>[];
+        for (var i = 0; i < cards.length; i++) {
+          if (i > 0) row.add(const SizedBox(width: 12));
+          row.add(Expanded(child: cards[i]));
+        }
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: row,
+          ),
         ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
       },
     );
@@ -238,7 +254,7 @@ class _GlobalMark extends StatelessWidget {
   }
 }
 
-/// Carte avec un anneau de réussite : en-tête (pastille + titre en Syne +
+/// Carte avec un anneau de réussite : en-tête (pastille + titre en Space Grotesk +
 /// phrase récapitulative), anneau avec le taux au centre, légende en chasse
 /// fixe avec les effectifs.
 class _DonutCard extends StatelessWidget {
@@ -273,30 +289,25 @@ class _DonutCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Pastille + titre sur une ligne, puis la phrase de résumé sur
+            // toute la largeur de la carte (elle tient ainsi sur une ligne).
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 leading,
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: AppText.display(18)),
-                      const SizedBox(height: 3),
-                      Text(
-                        caption,
-                        style: const TextStyle(
-                          color: AppColors.muted,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                Expanded(child: Text(title, style: AppText.display(18))),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 8),
+            Text(
+              caption,
+              style: const TextStyle(
+                color: AppColors.muted,
+                fontSize: 12.5,
+                height: 1.3,
+              ),
+            ),
+            const SizedBox(height: 16),
             Center(
               child: _Donut(stats: stats, size: size, rateSize: rateSize),
             ),
@@ -390,7 +401,7 @@ class _Donut extends StatelessWidget {
             children: [
               Text(
                 rateText,
-                style: AppText.display(
+                style: AppText.number(
                   rateSize,
                   color: empty ? AppColors.muted : AppColors.ink,
                 ),
@@ -466,7 +477,7 @@ class _LegendItem extends StatelessWidget {
           style: const TextStyle(color: AppColors.muted, fontSize: 13),
         ),
         const SizedBox(width: 5),
-        Text('$value', style: AppText.mono(14, color: AppColors.ink)),
+        Text('$value', style: AppText.number(14, color: AppColors.ink)),
       ],
     );
   }

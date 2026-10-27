@@ -324,7 +324,7 @@ class _ResultCard extends StatelessWidget {
           ),
         ),
         // Le ListTile limite la hauteur du `trailing` à 56 px : le score
-        // (une ligne en chasse fixe) puis le badge tiennent juste dedans.
+        // (une ligne en Space Grotesk) puis le badge tiennent juste dedans.
         trailing: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -332,7 +332,7 @@ class _ResultCard extends StatelessWidget {
           children: [
             Text(
               '${r.score} / ${r.total}',
-              style: AppText.mono(18, color: AppColors.ink),
+              style: AppText.number(18, color: AppColors.ink),
             ),
             const SizedBox(height: 3),
             StatusChip.passFail(r.passed),

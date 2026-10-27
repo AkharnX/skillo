@@ -110,7 +110,7 @@ class _JsonImportScreenState extends State<JsonImportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Le thème met le titre en Syne.
+      // Le thème met le titre en Space Grotesk.
       appBar: AppBar(title: Text('Import JSON · ${widget.discipline.label}')),
       body: Center(
         child: ConstrainedBox(

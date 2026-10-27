@@ -2,7 +2,7 @@
 ///
 /// En haut, un en-tête encre ([InkHeader]) salue le candidat et résume ses
 /// tests dans deux tuiles (combien passés, combien réussis). En dessous, une
-/// carte par discipline : la pastille de la discipline, son nom en Syne, une
+/// carte par discipline : la pastille de la discipline, son nom en Space Grotesk, une
 /// ligne en chasse fixe (nombre de questions et temps par question, ou le
 /// score obtenu) et, à droite, le bouton « Passer le test » ou le badge
 /// Réussi / Échoué avec la date. Un test ne peut être passé qu'une seule
@@ -249,6 +249,7 @@ class _CandidateHomeScreenState extends State<CandidateHomeScreen> {
       child: SafeArea(
         bottom: false,
         child: InkHeader(
+          maxContentWidth: 640,
           eyebrow: 'Espace candidat',
           title: 'Bonjour ${auth.user!.firstName}',
           subtitle: 'Une seule tentative par discipline',
@@ -435,7 +436,7 @@ class _DisciplineCard extends StatelessWidget {
     );
   }
 
-  /// Nom de la discipline en Syne et ligne d'information en chasse fixe :
+  /// Nom de la discipline en Space Grotesk et ligne d'information en Manrope :
   /// le score si le test est passé, sinon le nombre de questions et le temps.
   Widget _buildTitleColumn(TestResult? r) {
     final String line;
@@ -447,14 +448,14 @@ class _DisciplineCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(discipline.label, style: AppText.display(20)),
+        Text(discipline.label, style: AppText.display(18)),
         const SizedBox(height: 5),
         Text(
           line,
-          style: AppText.mono(
-            13,
+          style: const TextStyle(
+            fontSize: 13.5,
             color: AppColors.muted,
-            weight: FontWeight.w500,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -481,7 +482,7 @@ class _DisciplineCard extends StatelessWidget {
     final date = DateFormat('dd/MM/yyyy').format(r.takenAt);
     final dateText = Text(
       'Passé le $date',
-      style: AppText.mono(12, color: AppColors.muted, weight: FontWeight.w500),
+      style: const TextStyle(fontSize: 12.5, color: AppColors.muted),
     );
     if (compact) {
       return Row(
