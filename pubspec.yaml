@@ -33,3 +33,9 @@ flutter:
     - family: Manrope
       fonts:
         - asset: assets/fonts/Manrope-Variable.ttf
+    - family: Syne
+      fonts:
+        - asset: assets/fonts/Syne-Variable.ttf
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono-Variable.ttf

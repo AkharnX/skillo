@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_text.dart';
 
 /// Titre de section (ex. "Mes tests", "Résultats récents") avec un sous-titre
 /// optionnel, pour structurer les écrans qui empilent plusieurs blocs.
@@ -21,10 +22,7 @@ class SectionTitle extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-        ),
+        Text(title, style: AppText.display(19)),
         if (subtitle != null)
           Text(subtitle!, style: const TextStyle(color: AppColors.muted)),
       ],

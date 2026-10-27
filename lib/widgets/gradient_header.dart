@@ -1,29 +1,42 @@
-/// Widget partagé : en-tête en dégradé violet des écrans principaux.
+/// En-tête sombre « encre » affiché en haut des écrans principaux.
+///
+/// Historiquement un dégradé violet, d'où le nom de fichier ; le widget
+/// s'appelle désormais [InkHeader] et `GradientHeader` reste un alias pour
+/// les écrans existants.
 library;
 
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_text.dart';
 
-/// En-tête coloré en dégradé, affiché en haut des écrans principaux.
-///
-/// Il porte un titre, un sous-titre optionnel et éventuellement un widget
-/// à droite (avatar, bouton). Le bas est arrondi pour "poser" le contenu
-/// qui suit sur le fond gris de l'écran.
-class GradientHeader extends StatelessWidget {
-  const GradientHeader({
+/// Alias de compatibilité : les écrans écrits avec `GradientHeader`
+/// continuent de fonctionner.
+typedef GradientHeader = InkHeader;
+
+/// Panneau d'en-tête sur fond encre, avec un titre en Syne, un sous-titre
+/// optionnel, un widget à droite (avatar, bouton) et un contenu optionnel
+/// sous le texte. Un halo jaune très discret dans le coin supérieur droit
+/// donne de la profondeur sans dégradé criard.
+class InkHeader extends StatelessWidget {
+  const InkHeader({
     super.key,
     required this.title,
     this.subtitle,
+    this.eyebrow,
     this.trailing,
     this.child,
+    this.roundedBottom = true,
   });
 
-  /// Titre principal (ex. "Bonjour Marie").
+  /// Titre principal (ex. « Bonjour Marie »).
   final String title;
 
-  /// Ligne secondaire sous le titre (ex. "Choisis un test à passer").
+  /// Ligne secondaire sous le titre.
   final String? subtitle;
+
+  /// Petite étiquette en capitales au-dessus du titre (ex. « ESPACE ADMIN »).
+  final String? eyebrow;
 
   /// Widget affiché à droite du titre (ex. bouton de déconnexion).
   final Widget? trailing;
@@ -31,56 +44,84 @@ class GradientHeader extends StatelessWidget {
   /// Contenu optionnel sous le texte (ex. résumé des scores).
   final Widget? child;
 
+  /// Arrondit le bas du panneau (faux quand il est collé à une barre
+  /// latérale).
+  final bool roundedBottom;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryLight],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    // Sous-titre affiché seulement s'il est fourni.
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle!,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 15,
-                        ),
-                      ),
+    return ClipRRect(
+      borderRadius: roundedBottom
+          ? const BorderRadius.vertical(bottom: Radius.circular(28))
+          : BorderRadius.zero,
+      child: Container(
+        width: double.infinity,
+        color: AppColors.ink,
+        child: Stack(
+          children: [
+            // Halo jaune discret, décoratif, dans le coin supérieur droit.
+            Positioned(
+              right: -60,
+              top: -80,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.accent.withValues(alpha: 0.22),
+                      AppColors.accent.withValues(alpha: 0.0),
                     ],
-                  ],
+                  ),
                 ),
               ),
-              ?trailing, // affiché seulement s'il est fourni
-            ],
-          ),
-          // Contenu supplémentaire (avec un espace) seulement s'il est fourni.
-          if (child != null) ...[const SizedBox(height: 20), child!],
-        ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 24, 22, 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (eyebrow != null) ...[
+                              Text(
+                                eyebrow!.toUpperCase(),
+                                style: AppText.label(color: AppColors.accent),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                            Text(
+                              title,
+                              style: AppText.display(28, color: Colors.white),
+                            ),
+                            if (subtitle != null) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                subtitle!,
+                                style: const TextStyle(
+                                  color: AppColors.inkMuted,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      ?trailing,
+                    ],
+                  ),
+                  if (child != null) ...[const SizedBox(height: 20), child!],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
