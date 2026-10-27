@@ -1,10 +1,11 @@
 /// Ajout ou édition d'une question (US5).
 ///
 /// Le formulaire est découpé en deux cartes : la question (énoncé, type et
-/// temps limite) et la liste des choix. Chaque choix porte un bouton
-/// « Bonne réponse » ; en mode choix unique, cocher un choix décoche les
-/// autres. La validation métier est faite par `validateQuestion` avant
-/// l'enregistrement.
+/// temps limite) et la liste des choix. Devant chaque choix, la lettre (A, B,
+/// C…) sert de bouton « Bonne réponse » : encre et jaune quand le choix est
+/// coché, comme sur l'écran de test du candidat. En mode choix unique, cocher
+/// un choix décoche les autres. La validation métier est faite par
+/// `validateQuestion` avant l'enregistrement.
 library;
 
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import '../../logic/question_json.dart';
 import '../../models/discipline.dart';
 import '../../models/question.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text.dart';
 import '../../widgets/widgets.dart';
 
 /// Écran plein pour créer ou modifier une question d'une discipline.
@@ -180,6 +182,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   Widget build(BuildContext context) {
     final isNew = widget.question == null;
     return Scaffold(
+      // Le thème met le titre en Syne.
       appBar: AppBar(
         title: Text(
           isNew
@@ -191,7 +194,9 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 680),
           // Un défilement simple (et non un ListView) : tous les blocs sont
-          // construits d'un coup, le formulaire est court.
+          // construits d'un coup, le formulaire est court. Le bloc « Question »
+          // reste compact pour que les deux premiers choix soient visibles
+          // sans défiler sur un petit écran.
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Column(
@@ -199,10 +204,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
               children: [
                 // 1. Carte « Question » : énoncé, type et temps limite.
                 _FormCard(
-                  icon: Icons.help_outline,
                   title: 'Question',
-                  subtitle:
-                      'Énoncé, type de réponse attendue et temps accordé.',
                   child: Column(
                     children: [
                       TextField(
@@ -214,19 +216,19 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
                           labelText: 'Énoncé de la question',
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       _buildParams(),
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 // 2. Carte « Choix ».
                 _FormCard(
-                  icon: Icons.checklist_rounded,
-                  title: 'Choix (cochez les bonnes réponses)',
-                  subtitle: _type == QuestionType.radio
-                      ? 'Choix unique : exactement une bonne réponse.'
-                      : 'Choix multiples : au moins une bonne réponse.',
+                  title: 'Choix',
+                  hint: _type == QuestionType.radio
+                      ? 'Touchez la lettre pour marquer la bonne réponse '
+                            '(une seule).'
+                      : 'Touchez les lettres pour marquer les bonnes réponses.',
                   child: _buildChoices(),
                 ),
                 // 3. Erreur de validation éventuelle.
@@ -235,11 +237,11 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
                   _ErrorBanner(message: _error!),
                 ],
                 const SizedBox(height: 20),
-                // 4. Bouton d'enregistrement.
+                // 4. Bouton d'enregistrement (encre via le thème).
                 FilledButton.icon(
                   key: const Key('editor-save'),
                   onPressed: _save,
-                  icon: const Icon(Icons.save),
+                  icon: const Icon(Icons.save_outlined),
                   label: const Text('Enregistrer'),
                 ),
                 const SizedBox(height: 24),
@@ -262,6 +264,9 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     final typeField = DropdownButtonFormField<QuestionType>(
       key: const Key('editor-type'),
       initialValue: _type,
+      // Le menu prend toute la largeur du champ : le libellé le plus long ne
+      // déborde jamais sur un téléphone.
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: 'Type',
         prefixIcon: Icon(Icons.rule),
@@ -269,10 +274,12 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
       items: items,
       onChanged: _setType,
     );
+    // Le temps se saisit en chiffres : chasse fixe.
     final timeField = TextField(
       key: const Key('editor-time'),
       controller: _time,
       keyboardType: TextInputType.number,
+      style: AppText.mono(15),
       decoration: const InputDecoration(
         labelText: 'Temps limite',
         suffixText: 's',
@@ -300,8 +307,8 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     );
   }
 
-  /// Liste des choix avec leur bouton « Bonne réponse », puis le bouton
-  /// « Ajouter un choix ».
+  /// Liste des choix avec leur lettre-bascule, puis le bouton « Ajouter un
+  /// choix ».
   Widget _buildChoices() {
     // Une ligne par choix ; la suppression est désactivée à deux choix.
     final rows = <Widget>[];
@@ -318,10 +325,11 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     }
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ...rows,
-        TextButton.icon(
+        const SizedBox(height: 4),
+        OutlinedButton.icon(
           key: const Key('editor-add-choice'),
           onPressed: _addChoice,
           icon: const Icon(Icons.add),
@@ -332,59 +340,44 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   }
 }
 
-/// Carte de formulaire : un en-tête (icône, titre, sous-titre) puis le
+/// Carte de formulaire : titre en Syne, ligne d'aide optionnelle, puis le
 /// contenu, avec une légère animation d'apparition.
 class _FormCard extends StatelessWidget {
-  const _FormCard({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    required this.child,
-  });
+  const _FormCard({required this.title, this.hint, required this.child});
 
-  final IconData icon;
   final String title;
 
   /// Ligne d'aide sous le titre (facultative).
-  final String? subtitle;
+  final String? hint;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, size: 20, color: AppColors.primary),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SectionTitle(title: title, subtitle: subtitle),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
+            Text(title, style: AppText.display(18)),
+            if (hint != null) ...[
+              const SizedBox(height: 3),
+              Text(
+                hint!,
+                style: const TextStyle(color: AppColors.muted, fontSize: 13),
+              ),
+            ],
+            const SizedBox(height: 12),
             child,
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0);
+    ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
   }
 }
 
-/// Une ligne de choix : bouton bascule « Bonne réponse » à gauche, champ
-/// texte, bouton de retrait à droite. Le fond devient vert pâle et le libellé
-/// du champ indique « bonne réponse » quand le choix est correct.
+/// Une ligne de choix : lettre-bascule « Bonne réponse » à gauche (encre et
+/// jaune quand cochée), champ texte, bouton de retrait à droite.
 class _ChoiceRow extends StatelessWidget {
   const _ChoiceRow({
     required this.index,
@@ -408,38 +401,42 @@ class _ChoiceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final correct = draft.correct;
-    final tint = correct ? AppColors.success : AppColors.muted;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.fromLTRB(6, 6, 4, 6),
-      decoration: BoxDecoration(
-        color: tint.withValues(alpha: correct ? 0.08 : 0.04),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: tint.withValues(alpha: correct ? 0.4 : 0.15)),
-      ),
+    final letter = String.fromCharCode('A'.codeUnitAt(0) + index);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          // Bascule « Bonne réponse » : un appui inverse l'état.
-          IconButton(
-            key: Key('editor-correct-$index'),
-            tooltip: correct ? 'Bonne réponse' : 'Marquer comme bonne réponse',
-            isSelected: correct,
-            selectedIcon: const Icon(Icons.check_circle),
-            icon: const Icon(Icons.radio_button_unchecked),
-            color: AppColors.muted,
-            style: IconButton.styleFrom(
-              foregroundColor: correct ? AppColors.success : AppColors.muted,
+          // Bascule « Bonne réponse » : un appui inverse l'état. La zone
+          // tactile est plus large que la lettre (48 px).
+          Tooltip(
+            message: correct ? 'Bonne réponse' : 'Marquer comme bonne réponse',
+            child: Semantics(
+              button: true,
+              toggled: correct,
+              child: InkWell(
+                key: Key('editor-correct-$index'),
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => onCorrectChanged(!correct),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: ChoiceLetter(
+                    index: index,
+                    selected: correct,
+                    size: 38,
+                  ),
+                ),
+              ),
             ),
-            onPressed: () => onCorrectChanged(!correct),
           ),
+          const SizedBox(width: 6),
           Expanded(
             child: TextField(
               key: Key('editor-choice-$index'),
               controller: draft.controller,
               decoration: InputDecoration(
                 labelText: correct
-                    ? 'Choix ${index + 1} · bonne réponse'
-                    : 'Choix ${index + 1}',
+                    ? 'Choix $letter · bonne réponse'
+                    : 'Choix $letter',
                 labelStyle: TextStyle(
                   color: correct ? AppColors.success : null,
                   fontWeight: correct ? FontWeight.w700 : null,
@@ -450,6 +447,7 @@ class _ChoiceRow extends StatelessWidget {
           IconButton(
             tooltip: 'Retirer',
             icon: const Icon(Icons.remove_circle_outline),
+            color: AppColors.muted,
             onPressed: canRemove ? onRemove : null,
           ),
         ],

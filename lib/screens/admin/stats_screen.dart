@@ -1,9 +1,11 @@
 /// Statistiques (US7) : un anneau (« donut ») de réussite par discipline et un
 /// anneau global, pour l'année scolaire choisie.
 ///
-/// Chaque anneau est fin : la part verte correspond aux tests réussis, la part
-/// rouge aux tests échoués. Le taux de réussite est écrit en grand au centre
-/// et une légende donne les effectifs. Les trois disciplines s'affichent sur
+/// Chaque anneau est une jauge fine : la part verte correspond aux tests
+/// réussis, la part rouge aux tests échoués, séparées par un petit espace.
+/// Le taux de réussite est écrit en grand au centre, en encre (jamais de la
+/// couleur de la série), et une légende en chasse fixe donne les effectifs.
+/// Sans résultat, l'anneau est gris. Les trois disciplines s'affichent sur
 /// une ligne quand l'écran est assez large, sinon les unes sous les autres.
 library;
 
@@ -15,6 +17,7 @@ import 'package:provider/provider.dart';
 import '../../data/result_repository.dart';
 import '../../models/discipline.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text.dart';
 import '../../widgets/widgets.dart';
 
 /// Écran « Statistiques » de l'espace admin.
@@ -108,7 +111,7 @@ class _StatsScreenState extends State<StatsScreen> {
                 children: [
                   // 1. Filtre d'année.
                   _buildYearFilter(data),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 22),
                   // 2. Un anneau par discipline.
                   const SectionTitle(
                     title: 'Réussite par discipline',
@@ -116,35 +119,24 @@ class _StatsScreenState extends State<StatsScreen> {
                   ),
                   const SizedBox(height: 10),
                   _buildDisciplineGrid(data),
-                  const SizedBox(height: 20),
-                  // 3. Anneau global.
+                  const SizedBox(height: 22),
+                  // 3. Anneau global, plus grand.
                   const SectionTitle(
                     title: 'Réussite globale',
                     subtitle: 'Toutes disciplines confondues',
                   ),
                   const SizedBox(height: 10),
                   _DonutCard(
-                        leading: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: const Icon(
-                            Icons.public,
-                            color: AppColors.primary,
-                            size: 20,
-                          ),
-                        ),
+                        leading: const _GlobalMark(),
                         title: 'Global · $yearLabel',
                         caption: _label('Global $yearLabel', data.global),
                         stats: data.global,
                         size: 200,
+                        rateSize: 36,
                       )
                       .animate()
-                      .fadeIn(duration: 300.ms)
-                      .slideY(begin: 0.05, end: 0),
+                      .fadeIn(duration: 280.ms)
+                      .slideY(begin: 0.04, end: 0),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -187,16 +179,16 @@ class _StatsScreenState extends State<StatsScreen> {
           ),
         ),
       ),
-    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0);
+    ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
   }
 
-  /// Les trois anneaux de discipline : trois colonnes sur écran large, une
-  /// seule colonne sur téléphone.
+  /// Les trois anneaux de discipline : trois colonnes à partir de 700 px,
+  /// une seule colonne sur téléphone.
   Widget _buildDisciplineGrid(_StatsData data) {
     return LayoutBuilder(
       builder: (context, constraints) {
         const spacing = 12.0;
-        final columns = constraints.maxWidth >= 640 ? 3 : 1;
+        final columns = constraints.maxWidth >= 700 ? 3 : 1;
         final cardWidth =
             (constraints.maxWidth - spacing * (columns - 1)) / columns;
 
@@ -213,6 +205,7 @@ class _StatsScreenState extends State<StatsScreen> {
                 caption: _label(d.label, stats),
                 stats: stats,
                 size: 150,
+                rateSize: 28,
               ),
             ),
           );
@@ -221,21 +214,41 @@ class _StatsScreenState extends State<StatsScreen> {
           spacing: spacing,
           runSpacing: spacing,
           children: cards,
-        ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0);
+        ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
       },
     );
   }
 }
 
-/// Carte avec un anneau de réussite : en-tête (pastille + titre + phrase
-/// récapitulative), anneau avec le taux au centre, légende avec effectifs.
+/// Pastille de la carte globale : carré encre pâle avec une icône encre.
+class _GlobalMark extends StatelessWidget {
+  const _GlobalMark();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: AppColors.ink.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: const Icon(Icons.public, color: AppColors.ink, size: 20),
+    );
+  }
+}
+
+/// Carte avec un anneau de réussite : en-tête (pastille + titre en Syne +
+/// phrase récapitulative), anneau avec le taux au centre, légende en chasse
+/// fixe avec les effectifs.
 class _DonutCard extends StatelessWidget {
   const _DonutCard({
     required this.leading,
     required this.title,
     required this.caption,
     required this.stats,
-    this.size = 150,
+    required this.size,
+    required this.rateSize,
   });
 
   /// Pastille affichée à gauche du titre (discipline ou icône globale).
@@ -249,6 +262,9 @@ class _DonutCard extends StatelessWidget {
   /// Diamètre de l'anneau en pixels logiques.
   final double size;
 
+  /// Taille du taux écrit au centre de l'anneau.
+  final double rateSize;
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -258,20 +274,34 @@ class _DonutCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 leading,
                 const SizedBox(width: 12),
                 Expanded(
-                  child: SectionTitle(title: title, subtitle: caption),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: AppText.display(18)),
+                      const SizedBox(height: 3),
+                      Text(
+                        caption,
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             Center(
-              child: _Donut(stats: stats, size: size),
+              child: _Donut(stats: stats, size: size, rateSize: rateSize),
             ),
             const SizedBox(height: 16),
-            _Legend(stats: stats),
+            Center(child: _Legend(stats: stats)),
           ],
         ),
       ),
@@ -282,17 +312,23 @@ class _DonutCard extends StatelessWidget {
 /// L'anneau lui-même : part verte (réussis), part rouge (échoués), taux au
 /// centre. Sans résultat, un anneau gris et un tiret.
 class _Donut extends StatelessWidget {
-  const _Donut({required this.stats, required this.size});
+  const _Donut({
+    required this.stats,
+    required this.size,
+    required this.rateSize,
+  });
 
   final PassStats stats;
   final double size;
+  final double rateSize;
 
   @override
   Widget build(BuildContext context) {
     final empty = stats.total == 0;
-    // Anneau fin : épaisseur = 11 % du diamètre, trou = 36 % du diamètre.
-    final ring = size * 0.11;
-    final hole = size * 0.36;
+    // Anneau fin : épaisseur ≈ 12 % du rayon ; le trou occupe le reste.
+    final radius = size / 2;
+    final ring = radius * 0.12;
+    final hole = radius - ring;
 
     // 1. Les parts de l'anneau : une seule part grise si aucun résultat,
     //    sinon une part par effectif non nul (une part vide se dessine mal).
@@ -301,7 +337,7 @@ class _Donut extends StatelessWidget {
       sections.add(
         PieChartSectionData(
           value: 1,
-          color: AppColors.muted.withValues(alpha: 0.2),
+          color: AppColors.border,
           radius: ring,
           showTitle: false,
         ),
@@ -329,7 +365,7 @@ class _Donut extends StatelessWidget {
       }
     }
 
-    // 2. Chiffre clé au centre : le taux de réussite.
+    // 2. Chiffre clé au centre : le taux de réussite, en encre.
     final rateText = empty ? '—' : '${(stats.rate * 100).round()} %';
 
     return SizedBox(
@@ -341,7 +377,9 @@ class _Donut extends StatelessWidget {
           PieChart(
             PieChartData(
               sections: sections,
-              sectionsSpace: empty ? 0 : 2,
+              // Un espace de 2 px entre les deux parts, aucun si l'anneau
+              // est plein (une seule part).
+              sectionsSpace: sections.length > 1 ? 2 : 0,
               centerSpaceRadius: hole,
               startDegreeOffset: -90,
               pieTouchData: PieTouchData(enabled: false),
@@ -352,20 +390,15 @@ class _Donut extends StatelessWidget {
             children: [
               Text(
                 rateText,
-                style: TextStyle(
-                  fontSize: size * 0.17,
-                  fontWeight: FontWeight.w800,
-                  // Le chiffre reste en couleur de texte : la couleur de la
-                  // série est portée par l'anneau, pas par le texte.
-                  color: empty ? AppColors.muted : null,
+                style: AppText.display(
+                  rateSize,
+                  color: empty ? AppColors.muted : AppColors.ink,
                 ),
               ),
+              const SizedBox(height: 4),
               Text(
                 empty ? 'aucun test' : 'de réussite',
-                style: TextStyle(
-                  fontSize: size * 0.075,
-                  color: AppColors.muted,
-                ),
+                style: AppText.label(),
               ),
             ],
           ),
@@ -375,7 +408,9 @@ class _Donut extends StatelessWidget {
   }
 }
 
-/// Légende à deux lignes : « Réussi » et « Échoué » avec leurs effectifs.
+/// Légende sur une ligne : « ● Réussi 3 · ● Échoué 1 ». Les libellés restent
+/// en gris, les effectifs en chasse fixe encre ; seul le point porte la
+/// couleur de la série.
 class _Legend extends StatelessWidget {
   const _Legend({required this.stats});
 
@@ -383,15 +418,17 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Wrap(
+      spacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        _LegendRow(
+        _LegendItem(
           color: AppColors.success,
           label: 'Réussi',
           value: stats.passed,
         ),
-        const SizedBox(height: 6),
-        _LegendRow(
+        const Text('·', style: TextStyle(color: AppColors.muted)),
+        _LegendItem(
           color: AppColors.danger,
           label: 'Échoué',
           value: stats.failed,
@@ -401,9 +438,9 @@ class _Legend extends StatelessWidget {
   }
 }
 
-/// Une ligne de légende : point coloré, libellé, effectif aligné à droite.
-class _LegendRow extends StatelessWidget {
-  const _LegendRow({
+/// Un élément de légende : point coloré, libellé gris, effectif en mono.
+class _LegendItem extends StatelessWidget {
+  const _LegendItem({
     required this.color,
     required this.label,
     required this.value,
@@ -416,17 +453,20 @@ class _LegendRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 10,
-          height: 10,
+          width: 9,
+          height: 9,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(label, style: const TextStyle(color: AppColors.muted)),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(color: AppColors.muted, fontSize: 13),
         ),
-        Text('$value', style: const TextStyle(fontWeight: FontWeight.w800)),
+        const SizedBox(width: 5),
+        Text('$value', style: AppText.mono(14, color: AppColors.ink)),
       ],
     );
   }

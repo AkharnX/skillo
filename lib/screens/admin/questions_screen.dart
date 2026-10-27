@@ -2,9 +2,11 @@
 /// édition, suppression, import JSON et réinitialisation aux questions par
 /// défaut.
 ///
-/// La discipline se choisit avec un bouton segmenté ; chaque question est une
-/// carte qui montre son type (choix unique / multiples), son temps limite et
-/// son nombre de choix. Un appui sur la carte ouvre l'éditeur.
+/// La discipline se choisit avec un bouton segmenté (encre quand sélectionné,
+/// via le thème) ; chaque question est une carte blanche : numéro en chasse
+/// fixe dans un carré teinté de la couleur de la discipline, énoncé, puis une
+/// rangée de puces (type, temps limite, nombre de choix). Un appui sur la
+/// carte ouvre l'éditeur.
 library;
 
 import 'package:flutter/material.dart';
@@ -15,6 +17,7 @@ import '../../data/question_repository.dart';
 import '../../models/discipline.dart';
 import '../../models/question.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text.dart';
 import '../../widgets/widgets.dart';
 import 'json_import_screen.dart';
 import 'question_editor_screen.dart';
@@ -66,7 +69,10 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             child: const Text('Annuler'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              minimumSize: const Size(0, 44),
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Supprimer'),
           ),
@@ -96,6 +102,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             child: const Text('Annuler'),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Réinitialiser'),
           ),
@@ -145,11 +152,17 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
           ),
         ),
       ),
+      // Bouton d'ajout : encre avec l'icône en jaune signal.
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('questions-add'),
+        backgroundColor: AppColors.ink,
+        foregroundColor: Colors.white,
         onPressed: () => _open(QuestionEditorScreen(discipline: _discipline)),
-        icon: const Icon(Icons.add),
-        label: const Text('Ajouter'),
+        icon: const Icon(Icons.add, color: AppColors.accent),
+        label: const Text(
+          'Ajouter',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }
@@ -167,7 +180,6 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       );
     }
 
-    final color = AppColors.forDiscipline(_discipline);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -179,10 +191,9 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
                 selected: {_discipline},
                 showSelectedIcon: false,
                 expandedInsets: EdgeInsets.zero,
+                // Marges réduites pour que les trois libellés tiennent sur un
+                // téléphone ; les couleurs viennent du thème.
                 style: SegmentedButton.styleFrom(
-                  selectedBackgroundColor: color.withValues(alpha: 0.14),
-                  selectedForegroundColor: color,
-                  side: BorderSide(color: color.withValues(alpha: 0.35)),
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
                 onSelectionChanged: (s) => setState(() {
@@ -221,7 +232,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0);
+    ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
   }
 
   /// Liste des cartes de questions, ou état vide.
@@ -237,6 +248,10 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
       );
     }
 
+    // Accord du mot « question » selon le nombre.
+    final count = questions.length;
+    final countLabel = count > 1 ? '$count questions' : '$count question';
+
     // Le premier élément est le titre de section, les suivants les cartes.
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
@@ -247,8 +262,7 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             padding: const EdgeInsets.only(bottom: 10),
             child: SectionTitle(
               title: 'Questions ${_discipline.label}',
-              subtitle:
-                  '${questions.length} question(s) · appuyez pour modifier',
+              subtitle: '$countLabel · appuyez pour modifier',
             ),
           );
         }
@@ -264,14 +278,14 @@ class _QuestionsScreenState extends State<QuestionsScreen> {
             ),
             onDelete: () => _delete(q),
           ),
-        ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.08, end: 0);
+        ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
       },
     );
   }
 }
 
-/// Carte d'une question : numéro, énoncé, badges (type, temps, nombre de
-/// choix) et actions modifier / supprimer.
+/// Carte d'une question : numéro en chasse fixe, énoncé, puces (type, temps,
+/// nombre de choix) et actions modifier / supprimer.
 class _QuestionCard extends StatelessWidget {
   const _QuestionCard({
     required this.number,
@@ -304,8 +318,8 @@ class _QuestionCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Numéro de la question dans une pastille de la couleur de la
-              // discipline.
+              // Numéro sur deux chiffres (« 01 ») dans un carré teinté de la
+              // couleur de la discipline.
               Container(
                 width: 36,
                 height: 36,
@@ -315,12 +329,16 @@ class _QuestionCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '$number',
-                  style: TextStyle(color: color, fontWeight: FontWeight.w800),
+                  number.toString().padLeft(2, '0'),
+                  style: AppText.mono(
+                    13,
+                    color: color,
+                    weight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
-              // Énoncé + badges.
+              // Énoncé + puces.
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,10 +347,11 @@ class _QuestionCard extends StatelessWidget {
                       q.text,
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
-                        fontSize: 15,
+                        fontSize: 16,
+                        height: 1.3,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
@@ -342,17 +361,15 @@ class _QuestionCard extends StatelessWidget {
                               ? Icons.radio_button_checked
                               : Icons.check_box_outlined,
                           label: q.type.label,
-                          color: AppColors.primary,
                         ),
                         _InfoChip(
                           icon: Icons.timer_outlined,
                           label: '${q.timeLimitS} s',
-                          color: AppColors.warning,
+                          mono: true,
                         ),
                         _InfoChip(
                           icon: Icons.format_list_bulleted,
                           label: '${q.choices.length} choix',
-                          color: AppColors.muted,
                         ),
                       ],
                     ),
@@ -364,7 +381,7 @@ class _QuestionCard extends StatelessWidget {
                 children: [
                   IconButton(
                     tooltip: 'Modifier',
-                    icon: const Icon(Icons.edit_outlined),
+                    icon: const Icon(Icons.edit_outlined, color: AppColors.ink),
                     onPressed: onTap,
                   ),
                   IconButton(
@@ -386,38 +403,39 @@ class _QuestionCard extends StatelessWidget {
   }
 }
 
-/// Petit badge d'information : icône + texte court, sur fond pâle.
+/// Puce d'information : icône grise + texte court sur fond pâle. Le texte
+/// passe en chasse fixe quand c'est un nombre (temps limite).
 class _InfoChip extends StatelessWidget {
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
+  const _InfoChip({required this.icon, required this.label, this.mono = false});
 
   final IconData icon;
   final String label;
-  final Color color;
+
+  /// Vrai pour afficher le texte en JetBrains Mono (chiffres).
+  final bool mono;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
+          Icon(icon, size: 14, color: AppColors.muted),
+          const SizedBox(width: 5),
           Text(
             label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
+            style: mono
+                ? AppText.mono(12, color: AppColors.text)
+                : const TextStyle(
+                    color: AppColors.text,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
           ),
         ],
       ),

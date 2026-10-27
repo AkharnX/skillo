@@ -1,9 +1,11 @@
 /// Tableau de bord admin (US6) : derniers résultats des candidats, avec une
 /// recherche par nom ou prénom et un filtre par année scolaire.
 ///
-/// L'écran affiche en haut une carte de filtres, puis trois petites tuiles de
-/// chiffres clés (candidats, tests passés, taux de réussite) calculées sur les
-/// résultats affichés, puis la liste des résultats sous forme de cartes.
+/// L'écran affiche en haut une carte de filtres, puis trois tuiles de chiffres
+/// clés (candidats, tests passés, taux de réussite) calculées sur les
+/// résultats affichés, puis la liste des résultats : une carte par résultat
+/// avec la pastille de la discipline, le nom du candidat, la date, le score
+/// en chasse fixe et le badge Réussi / Échoué.
 library;
 
 import 'package:flutter/material.dart';
@@ -14,6 +16,7 @@ import 'package:provider/provider.dart';
 import '../../data/result_repository.dart';
 import '../../models/test_result.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text.dart';
 import '../../widgets/widgets.dart';
 
 /// Écran « Résultats » de l'espace admin.
@@ -172,7 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
         ),
       ),
-    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0);
+    ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
   }
 
   /// Liste des résultats précédée des tuiles de chiffres clés.
@@ -196,7 +199,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (i == 0) return _KeyFigures(results: results);
         if (i == 1) {
           return Padding(
-            padding: const EdgeInsets.only(top: 20, bottom: 10),
+            padding: const EdgeInsets.only(top: 22, bottom: 10),
             child: SectionTitle(
               title: 'Résultats récents',
               subtitle:
@@ -208,7 +211,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: _ResultCard(result: results[index], dateFormat: _dateFormat),
-        ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.08, end: 0);
+        ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
       },
     );
   }
@@ -238,98 +241,61 @@ class _KeyFigures extends StatelessWidget {
         ? 0
         : (passedCount * 100 / results.length).round();
 
-    // 3. Trois tuiles de même largeur.
-    return Row(
-      children: [
-        Expanded(
-          child: _StatTile(
-            icon: Icons.people_alt_outlined,
-            color: AppColors.primary,
-            label: 'Candidats',
-            value: '${candidateIds.length}',
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _StatTile(
-            icon: Icons.assignment_turned_in_outlined,
-            color: AppColors.warning,
-            label: 'Tests passés',
-            value: '${results.length}',
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _StatTile(
-            icon: Icons.trending_up_rounded,
-            color: AppColors.success,
-            label: 'Réussite',
-            value: '$rate %',
-          ),
-        ),
-      ],
-    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0);
-  }
-}
-
-/// Une tuile de chiffre clé : icône colorée, grande valeur, libellé discret.
-class _StatTile extends StatelessWidget {
-  const _StatTile({
-    required this.icon,
-    required this.color,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-
-  /// Couleur de l'icône et de sa pastille.
-  final Color color;
-
-  /// Libellé court sous la valeur (ex. « Candidats »).
-  final String label;
-
-  /// Valeur affichée en grand (ex. « 12 » ou « 67 % »).
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, size: 18, color: color),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              value,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-            ),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, color: AppColors.muted),
-            ),
-          ],
-        ),
-      ),
+    // 3. Les trois tuiles.
+    final candidates = StatTile(
+      icon: Icons.people_alt_outlined,
+      label: 'Candidats',
+      value: '${candidateIds.length}',
     );
+    final tests = StatTile(
+      icon: Icons.assignment_turned_in_outlined,
+      label: 'Tests passés',
+      value: '${results.length}',
+    );
+    final success = StatTile(
+      icon: Icons.trending_up_rounded,
+      color: AppColors.success,
+      label: 'Réussite',
+      value: '$rate %',
+    );
+
+    // 4. Trois colonnes quand la place le permet ; sur téléphone, deux tuiles
+    //    côte à côte puis la troisième en pleine largeur, pour que les grands
+    //    chiffres ne soient jamais coupés.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 480) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(child: candidates),
+                  const SizedBox(width: 10),
+                  Expanded(child: tests),
+                ],
+              ),
+              const SizedBox(height: 10),
+              success,
+            ],
+          );
+        }
+        return Row(
+          children: [
+            Expanded(child: candidates),
+            const SizedBox(width: 10),
+            Expanded(child: tests),
+            const SizedBox(width: 10),
+            Expanded(child: success),
+          ],
+        );
+      },
+    ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
   }
 }
 
-/// Carte d'un résultat : pastille de la discipline, nom du candidat, date et
-/// année, score et badge Réussi / Échoué.
+/// Carte d'un résultat : pastille de la discipline, nom du candidat, ligne
+/// « discipline · date · année », score en chasse fixe et badge Réussi /
+/// Échoué. Un seul [ListTile] par résultat (les tests les comptent).
 class _ResultCard extends StatelessWidget {
   const _ResultCard({required this.result, required this.dateFormat});
 
@@ -345,29 +311,30 @@ class _ResultCard extends StatelessWidget {
         leading: DisciplineAvatar(discipline: r.discipline, size: 44),
         title: Text(
           r.candidateName ?? '?',
-          style: const TextStyle(fontWeight: FontWeight.w700),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 2),
           child: Text(
-            '${r.discipline.label} · ${dateFormat.format(r.takenAt)}\n'
-            'Année ${r.schoolYear}',
-            style: const TextStyle(fontSize: 12, color: AppColors.muted),
+            '${r.discipline.label} · ${dateFormat.format(r.takenAt)} · '
+            '${r.schoolYear}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 12.5, color: AppColors.muted),
           ),
         ),
-        isThreeLine: true,
-        // Le ListTile limite la hauteur du `trailing` : deux lignes au plus
-        // (score + pourcentage sur une ligne, puis le badge).
+        // Le ListTile limite la hauteur du `trailing` à 56 px : le score
+        // (une ligne en chasse fixe) puis le badge tiennent juste dedans.
         trailing: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '${r.score} / ${r.total} · ${r.percent.round()} %',
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+              '${r.score} / ${r.total}',
+              style: AppText.mono(18, color: AppColors.ink),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             StatusChip.passFail(r.passed),
           ],
         ),

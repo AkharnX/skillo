@@ -3,7 +3,8 @@
 ///
 /// Un bouton permet de pré-remplir la zone de texte avec les questions
 /// actuelles, exportées dans le même format : c'est le moyen le plus simple
-/// de voir le format attendu et de modifier les questions en bloc.
+/// de voir le format attendu et de modifier les questions en bloc. En bas,
+/// l'exemple de format est montré dans un bloc « terminal » sombre.
 library;
 
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import '../../data/question_repository.dart';
 import '../../logic/question_json.dart';
 import '../../models/discipline.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text.dart';
 import '../../widgets/widgets.dart';
 
 /// Écran plein d'import JSON pour une discipline.
@@ -38,22 +40,23 @@ class _JsonImportScreenState extends State<JsonImportScreen> {
   /// envoi.
   bool _busy = false;
 
-  /// Exemple de document affiché dans l'aide au format.
-  static const _example =
-      '{\n'
-      '  "discipline": "java",\n'
-      '  "questions": [\n'
-      '    {\n'
-      '      "text": "Énoncé…",\n'
-      '      "type": "radio",\n'
-      '      "timeLimit": 30,\n'
-      '      "choices": [\n'
-      '        {"text": "Choix A", "correct": true},\n'
-      '        {"text": "Choix B"}\n'
-      '      ]\n'
-      '    }\n'
-      '  ]\n'
-      '}';
+  /// Exemple de document affiché dans l'aide au format, une ligne par entrée.
+  static const _exampleLines = [
+    '{',
+    '  "discipline": "java",',
+    '  "questions": [',
+    '    {',
+    '      "text": "Énoncé…",',
+    '      "type": "radio",',
+    '      "timeLimit": 30,',
+    '      "choices": [',
+    '        {"text": "Choix A", "correct": true},',
+    '        {"text": "Choix B"}',
+    '      ]',
+    '    }',
+    '  ]',
+    '}',
+  ];
 
   @override
   void dispose() {
@@ -106,8 +109,8 @@ class _JsonImportScreenState extends State<JsonImportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.forDiscipline(widget.discipline);
     return Scaffold(
+      // Le thème met le titre en Syne.
       appBar: AppBar(title: Text('Import JSON · ${widget.discipline.label}')),
       body: Center(
         child: ConstrainedBox(
@@ -120,14 +123,14 @@ class _JsonImportScreenState extends State<JsonImportScreen> {
                 text:
                     'Collez un document JSON. Toutes les questions actuelles de '
                     '« ${widget.discipline.label} » seront remplacées.',
-              ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
+              ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0),
               const SizedBox(height: 12),
               // 2. Zone de saisie.
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Row(
                         children: [
@@ -151,10 +154,7 @@ class _JsonImportScreenState extends State<JsonImportScreen> {
                         controller: _json,
                         maxLines: 18,
                         minLines: 6,
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 13,
-                        ),
+                        style: AppText.mono(13, weight: FontWeight.w500),
                         decoration: const InputDecoration(
                           hintText:
                               '{"discipline": "java", "questions": [ … ]}',
@@ -172,28 +172,27 @@ class _JsonImportScreenState extends State<JsonImportScreen> {
                     ],
                   ),
                 ),
-              ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
+              ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0),
               // 3. Erreur éventuelle.
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 _ErrorBanner(message: _error!),
               ],
               const SizedBox(height: 16),
-              // 4. Bouton d'import.
+              // 4. Bouton d'import (encre via le thème).
               FilledButton.icon(
                 key: const Key('import-submit'),
-                style: FilledButton.styleFrom(backgroundColor: color),
                 onPressed: _busy ? null : _import,
                 icon: const Icon(Icons.upload),
                 label: const Text('Importer et remplacer'),
               ),
               const SizedBox(height: 20),
-              // 5. Aide au format.
+              // 5. Aide au format : l'exemple dans un bloc terminal sombre.
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SectionTitle(
                         title: 'Format attendu',
@@ -203,35 +202,46 @@ class _JsonImportScreenState extends State<JsonImportScreen> {
                             '"correct" est facultatif (faux par défaut).',
                       ),
                       const SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const SelectableText(
-                          _example,
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 12,
-                            color: AppColors.muted,
-                          ),
-                        ),
-                      ),
+                      _buildExample(),
                     ],
                   ),
                 ),
-              ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
+              ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0),
             ],
           ),
         ),
       ),
     );
   }
+
+  /// Bloc terminal avec l'exemple de JSON. Il occupe toute la largeur de la
+  /// carte ; sur un écran étroit les lignes longues défilent horizontalement
+  /// au lieu d'être coupées.
+  Widget _buildExample() {
+    // Une ligne de terminal par ligne de l'exemple, toutes blanches.
+    final lines = <TerminalLine>[];
+    for (final text in _exampleLines) {
+      lines.add(TerminalLine(text));
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+            child: TerminalCard(
+              title: '${widget.discipline.code}.json',
+              lines: lines,
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
-/// Bandeau orange pâle : avertissement avant une action destructive.
+/// Bandeau jaune pâle : avertissement avant une action destructive. Texte
+/// et icône en encre, toujours lisibles sur le jaune.
 class _WarningBanner extends StatelessWidget {
   const _WarningBanner({required this.text});
 
@@ -240,17 +250,25 @@ class _WarningBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.warning.withValues(alpha: 0.35)),
+        color: AppColors.accentSoft,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: AppColors.warning),
-          const SizedBox(width: 10),
-          Expanded(child: Text(text)),
+          const Icon(Icons.warning_amber_rounded, color: AppColors.ink),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: AppColors.ink,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+              ),
+            ),
+          ),
         ],
       ),
     );
