@@ -466,27 +466,63 @@ return indexes;
 
 ## 4. État (`lib/state/`), thème (`lib/theme/`) et widgets (`lib/widgets/`)
 
-Aucune boucle : `AuthState` ne fait que mémoriser l'utilisateur connecté et
-prévenir les écrans ; le thème et les widgets partagés construisent des arbres de
-widgets fixes. Les `if (x != null) ...[ … ]` que l'on y voit sont des
-**conditions** dans une liste de widgets, pas des boucles.
+`AuthState` ne fait que mémoriser l'utilisateur connecté et prévenir les
+écrans ; le thème construit des objets de style fixes. Les `if (x != null)
+...[ … ]` que l'on y voit sont des **conditions** dans une liste de widgets, pas
+des boucles. Il n'y a pas non plus de boucle dans `lib/main.dart` ni
+`lib/app.dart`.
 
-Il n'y a pas non plus de boucle dans `lib/main.dart` ni `lib/app.dart`.
+Un seul widget partagé contient une boucle : le faux terminal `TerminalCard`,
+qui affiche une ligne par `TerminalLine` reçue.
+
+### 4.1 `terminal_card.dart` — `TerminalCard.build`
+
+```dart
+final rows = <Widget>[];
+for (final line in lines) {
+  rows.add(
+    Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Text(
+        line.text,
+        style: AppText.mono(
+          13.5,
+          color: line.color,
+          weight: FontWeight.w500,
+        ),
+      ),
+    ),
+  );
+}
+```
+
+- **Sur quoi on boucle** : les `TerminalLine` (texte + couleur) passées au widget, dans l'ordre.
+- **Ce qu'on construit** : la liste `rows` des widgets `Text` en chasse fixe, un par ligne.
+- **Pourquoi** : le widget ne connaît pas à l'avance le nombre de lignes (trois disciplines sur l'écran de connexion, une vingtaine de lignes de JSON sur l'import) ; la même boucle sert aux deux.
+- **À l'oral** : « Pour chaque ligne reçue, je crée un `Text` avec son texte et sa couleur, dans la police mono, et je l'ajoute à une liste. Cette liste devient les enfants de la colonne sous la barre de titre du terminal. »
 
 ---
 
 ## 5. Écrans (`lib/screens/`)
 
-Les écrans ne sont pas modifiés par ce document : les boucles ci-dessous sont
-celles présentes dans `lib/screens/` à la date de rédaction. Dans les écrans, les
+Les boucles ci-dessous sont celles présentes dans `lib/screens/` après la
+réécriture des écrans en identité « encre et signal ». Dans les écrans, les
 boucles servent presque toujours à **construire une liste de widgets** (une carte
-par discipline, une entrée de menu par année…) ou à **compter** quelque chose
-avant l'affichage.
+par discipline, une entrée de menu par année, un séparateur entre deux lignes…)
+ou à **compter** quelque chose avant l'affichage. `admin/admin_shell.dart`
+n'en contient aucune.
 
 ### 5.1 `auth/register_screen.dart` — `dispose`
 
 ```dart
-final controllers = [_lastName, _firstName, _email, _age, _address, _password];
+final controllers = [
+  _lastName,
+  _firstName,
+  _email,
+  _age,
+  _address,
+  _password,
+];
 for (final controller in controllers) {
   controller.dispose();
 }
@@ -511,7 +547,77 @@ items: [
 - **Pourquoi** : la liste déroulante doit proposer exactement les motivations du cahier des charges.
 - **À l'oral** : « Pour chaque motivation de l'énumération, je crée une entrée de menu dont la valeur est la motivation et le texte son libellé. »
 
-### 5.3 `candidate/candidate_home_screen.dart` — `_indexByDiscipline`
+### 5.3 `auth/register_screen.dart` — `_InkColumn.build` (les trois étapes)
+
+```dart
+final stepRows = <Widget>[];
+for (var i = 0; i < _steps.length; i++) {
+  final (icon, text) = _steps[i];
+  stepRows.add(
+    Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: _StepRow(number: i + 1, icon: icon, text: text),
+    ),
+  );
+}
+```
+
+- **Sur quoi on boucle** : les positions `i` de `_steps`, la liste constante des trois étapes « Ce que vous allez faire » (un couple icône + texte chacune). Indexée car la ligne affiche son numéro `i + 1`.
+- **Ce qu'on construit** : la liste `stepRows` des lignes numérotées, chacune avec un espace en dessous.
+- **Pourquoi** : la colonne encre à gauche de l'inscription (grand écran) présente le parcours du candidat en trois étapes ; les numéros viennent de l'index, pas d'un champ supplémentaire.
+- **À l'oral** : « Je parcours les trois étapes avec leur position. Pour chacune, je déstructure le couple icône/texte et je crée une ligne `_StepRow` numérotée de 1 à 3. La boucle me donne la liste des lignes que j'affiche dans la colonne. »
+
+### 5.4 `auth/login_screen.dart` — `_InkPanel._terminalLines`
+
+```dart
+final lines = <TerminalLine>[const TerminalLine(r'$ skillo test --list')];
+for (final d in Discipline.values) {
+  lines.add(
+    TerminalLine(
+      '${d.code.padRight(12)}${_specs[d]}',
+      color: AppColors.forDiscipline(d),
+    ),
+  );
+}
+```
+
+- **Sur quoi on boucle** : les trois disciplines.
+- **Ce qu'on construit** : les lignes du faux terminal de l'écran de connexion, après la ligne de commande `$ skillo test --list` ; la ligne « 1 tentative par discipline » est ajoutée après la boucle.
+- **Pourquoi** : chaque discipline s'affiche comme une sortie de commande, dans sa couleur, avec le code complété à 12 caractères (`padRight`) pour que les descriptions soient alignées en chasse fixe.
+- **À l'oral** : « Je commence la liste par la commande tapée, puis pour chaque discipline j'ajoute une ligne "code  description" colorée avec la couleur de la discipline. Le `padRight` aligne les colonnes. Le widget `TerminalCard` affiche ensuite ces lignes. »
+
+### 5.5 `candidate/candidate_home_screen.dart` — `_DisciplineInfo.fromQuestions`
+
+```dart
+var minTime = 0;
+var maxTime = 0;
+for (final q in questions) {
+  if (minTime == 0 || q.timeLimitS < minTime) minTime = q.timeLimitS;
+  if (q.timeLimitS > maxTime) maxTime = q.timeLimitS;
+}
+```
+
+- **Sur quoi on boucle** : les questions d'une discipline, chargées depuis la base.
+- **Ce qu'on construit** : deux compteurs, `minTime` et `maxTime`, le plus petit et le plus grand temps limite rencontrés (0 et 0 pour une liste vide).
+- **Pourquoi** : la carte de discipline affiche « 8 questions · 20-30 s / question » ; le nombre vient de `questions.length`, la fourchette de cette boucle. Le test `minTime == 0` sert d'initialisation : la première question fixe le minimum.
+- **À l'oral** : « Pour chaque question je compare son temps limite au minimum et au maximum déjà vus et je les mets à jour. Le minimum part de 0, qui veut dire "pas encore vu", donc la première question le remplace forcément. »
+
+### 5.6 `candidate/candidate_home_screen.dart` — `_loadData`
+
+```dart
+final infos = <Discipline, _DisciplineInfo>{};
+for (final d in Discipline.values) {
+  final questions = await questionRepository.forDiscipline(d);
+  infos[d] = _DisciplineInfo.fromQuestions(questions);
+}
+```
+
+- **Sur quoi on boucle** : les trois disciplines.
+- **Ce qu'on construit** : la Map `infos` « discipline → résumé (nombre de questions, temps min/max) ».
+- **Pourquoi** : chaque carte de l'accueil affiche le résumé de sa discipline ; on charge les questions discipline par discipline, en attendant chaque requête (`await` dans la boucle).
+- **À l'oral** : « Pour chaque discipline, je charge ses questions depuis le repository, j'en tire un résumé avec `fromQuestions` et je le range dans une Map sous la discipline. Les cartes lisent ensuite `infos[d]`. »
+
+### 5.7 `candidate/candidate_home_screen.dart` — `_indexByDiscipline`
 
 ```dart
 final byDiscipline = <Discipline, TestResult>{};
@@ -526,54 +632,82 @@ return byDiscipline;
 - **Pourquoi** : chaque carte de discipline doit savoir vite si le test a déjà été passé (`results[d]`).
 - **À l'oral** : « Je range chaque résultat dans une Map avec sa discipline comme clé. Comme un candidat ne passe un test qu'une fois, il y a au plus un résultat par discipline. »
 
-### 5.4 `candidate/candidate_home_screen.dart` — `_buildSummary`
+### 5.8 `candidate/candidate_home_screen.dart` — `_buildSummary`
 
 ```dart
 var passedCount = 0;
 for (final result in results.values) {
   if (result.passed) passedCount++;
 }
+final takenCount = results.length;
+final totalCount = Discipline.values.length;
 ```
 
 - **Sur quoi on boucle** : les résultats de la Map précédente.
 - **Ce qu'on construit** : `passedCount`, le nombre de tests réussis.
-- **Pourquoi** : l'en-tête affiche « X / 3 tests passés » et « Y réussis ».
+- **Pourquoi** : les deux tuiles de l'en-tête affichent « X / 3 tests passés » et « Y réussis ».
 - **À l'oral** : « Je parcours les résultats et j'incrémente un compteur à chaque test réussi. Le nombre de tests passés, c'est simplement la taille de la Map. »
 
-### 5.5 `candidate/candidate_home_screen.dart` — `_buildList`
+### 5.9 `candidate/candidate_home_screen.dart` — `_buildList`
 
 ```dart
 final cards = <Widget>[];
 for (var i = 0; i < Discipline.values.length; i++) {
   final d = Discipline.values[i];
-  cards.add(Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: _DisciplineCard(discipline: d, result: results[d], onStart: …)
-        .animate(delay: (60 * i).ms).fadeIn(duration: 300.ms) …,
-  ));
+  cards.add(
+    Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child:
+          _DisciplineCard(
+                discipline: d,
+                result: data.results[d],
+                info: data.infos[d],
+                onStart: _starting ? null : () => _start(d),
+              )
+              .animate(delay: (60 * i).ms)
+              .fadeIn(duration: 280.ms)
+              .slideY(begin: 0.04, end: 0),
+    ),
+  );
 }
 ```
 
 - **Sur quoi on boucle** : les positions `i` des disciplines (indexée pour le délai d'animation `60 * i` ms).
-- **Ce qu'on construit** : la liste des cartes de discipline.
-- **Pourquoi** : une carte par discipline, qui apparaît en cascade : la 1re tout de suite, la 2e 60 ms après, etc.
-- **À l'oral** : « Pour chaque discipline, je crée sa carte avec son résultat éventuel et le bouton de démarrage. J'utilise l'index pour décaler l'animation d'apparition de chaque carte. »
+- **Ce qu'on construit** : la liste des cartes de discipline, chacune avec son résultat éventuel et son résumé de questions.
+- **Pourquoi** : une carte par discipline, qui apparaît en cascade : la 1re tout de suite, la 2e 60 ms après, etc. Le bouton de démarrage est désactivé pendant qu'un test se lance (`_starting`).
+- **À l'oral** : « Pour chaque discipline, je crée sa carte avec son résultat, son résumé et le bouton de démarrage. J'utilise l'index pour décaler l'animation d'apparition de chaque carte. »
 
-### 5.6 `candidate/profile_screen.dart` — `_indexByDiscipline`
+### 5.10 `candidate/profile_screen.dart` — `_indexByDiscipline`
 
 ```dart
 final byDiscipline = <Discipline, TestResult>{};
 for (final result in list) {
   byDiscipline[result.discipline] = result;
 }
+return byDiscipline;
 ```
 
 - **Sur quoi on boucle** : les résultats du candidat.
-- **Ce qu'on construit** : la Map « discipline → résultat », comme en 5.3.
+- **Ce qu'on construit** : la Map « discipline → résultat », comme en 5.7.
 - **Pourquoi** : la carte « Mes résultats » affiche une ligne par discipline, avec ou sans résultat.
 - **À l'oral** : « Même boucle que sur l'accueil : chaque résultat est rangé sous sa discipline pour qu'on puisse le retrouver directement par `byDiscipline[d]`. »
 
-### 5.7 `candidate/profile_screen.dart` — `_buildResultsCard`
+### 5.11 `candidate/profile_screen.dart` — `_countPassed`
+
+```dart
+var passed = 0;
+for (final result in byDiscipline.values) {
+  if (result.passed) passed++;
+}
+return passed;
+```
+
+- **Sur quoi on boucle** : les résultats de la Map « discipline → résultat ».
+- **Ce qu'on construit** : `passed`, le nombre de tests réussis.
+- **Pourquoi** : l'en-tête du profil (`_buildHeader`) affiche le nombre de réussites à côté des initiales du candidat.
+- **À l'oral** : « Même comptage que sur l'accueil, mais isolé dans une petite fonction : je parcours les résultats et j'ajoute 1 à chaque test réussi. »
+
+### 5.12 `candidate/profile_screen.dart` — `_buildResultsCard`
 
 ```dart
 final rows = <Widget>[];
@@ -582,15 +716,15 @@ for (var i = 0; i < Discipline.values.length; i++) {
   if (i > 0) rows.add(const Divider(height: 1, indent: 16));
   rows.add(_ResultRow(discipline: d, result: byDiscipline[d]));
 }
-return Column(children: rows);
+return Card(child: Column(children: rows));
 ```
 
 - **Sur quoi on boucle** : les positions `i` des disciplines (indexée pour savoir si on est à la première ligne).
 - **Ce qu'on construit** : la liste des lignes de résultat, séparées par un trait.
 - **Pourquoi** : un `Divider` entre chaque ligne mais pas au-dessus de la première, d'où le test `i > 0`.
-- **À l'oral** : « Pour chaque discipline j'ajoute une ligne de résultat ; à partir de la deuxième, j'ajoute d'abord un séparateur. Le résultat est une colonne de trois lignes séparées par deux traits. »
+- **À l'oral** : « Pour chaque discipline j'ajoute une ligne de résultat ; à partir de la deuxième, j'ajoute d'abord un séparateur. Le résultat est une carte avec trois lignes séparées par deux traits. »
 
-### 5.8 `candidate/profile_screen.dart` — `_buildFormCard` (menu motivation)
+### 5.13 `candidate/profile_screen.dart` — `_buildFormCard` (menu motivation)
 
 ```dart
 items: [
@@ -604,7 +738,7 @@ items: [
 - **Pourquoi** : le candidat peut changer sa motivation (US3) parmi les mêmes valeurs qu'à l'inscription.
 - **À l'oral** : « Identique au formulaire d'inscription : une entrée de menu par motivation. »
 
-### 5.9 `candidate/profile_screen.dart` — `_InitialsAvatar._initials`
+### 5.14 `candidate/profile_screen.dart` — `_InitialsAvatar._initials`
 
 ```dart
 final words = fullName.trim().split(' ');
@@ -618,24 +752,28 @@ return initials;
 
 - **Sur quoi on boucle** : les mots du nom complet (« Jean Dupont » → `['Jean', 'Dupont']`).
 - **Ce qu'on construit** : la chaîne des initiales, deux lettres au maximum (« JD »).
-- **Pourquoi** : l'avatar du profil affiche les initiales du candidat ; les mots vides (double espace) sont ignorés.
+- **Pourquoi** : le carré encre du profil affiche les initiales du candidat en jaune signal ; les mots vides (double espace) sont ignorés.
 - **À l'oral** : « Je coupe le nom sur les espaces, puis pour chaque mot non vide je prends sa première lettre en majuscule, en m'arrêtant à deux lettres. »
 
-### 5.10 `candidate/test_screen.dart` — `_buildChoiceCards`
+### 5.15 `candidate/test_screen.dart` — `_buildChoiceCards`
 
 ```dart
 final cards = <Widget>[];
 for (var i = 0; i < q.choices.length; i++) {
-  cards.add(Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: _ChoiceCard(
-      index: i, text: q.choices[i].text,
-      isRadio: q.type == QuestionType.radio,
-      selected: _selected.contains(i),
-      onToggle: (value) => _toggle(i, value),
+  cards.add(
+    Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: _ChoiceCard(
+        index: i,
+        text: q.choices[i].text,
+        isRadio: q.type == QuestionType.radio,
+        selected: _selected.contains(i),
+        onToggle: (value) => _toggle(i, value),
+      ),
     ),
-  ));
+  );
 }
+return cards;
 ```
 
 - **Sur quoi on boucle** : les positions `i` des choix de la question courante (indexée car la réponse du candidat est un ensemble d'index).
@@ -643,11 +781,29 @@ for (var i = 0; i < q.choices.length; i++) {
 - **Pourquoi** : la position est la clé de tout le système de correction : `_selected` contient des index, `correctIndexes` aussi.
 - **À l'oral** : « Pour chaque choix de la question, je crée une carte cliquable. Je lui passe son index pour savoir, au clic, quel index ajouter ou retirer de l'ensemble des réponses cochées. »
 
-### 5.11 `admin/dashboard_screen.dart` — `_buildFilters` (menu année)
+### 5.16 `candidate/test_result_screen.dart` — `_SummaryBlock.build`
+
+```dart
+final children = <Widget>[];
+for (var i = 0; i < rows.length; i++) {
+  if (i > 0) children.add(const Divider(height: 1));
+  children.add(rows[i]);
+}
+```
+
+- **Sur quoi on boucle** : les positions `i` des lignes du récapitulatif (`_SummaryRow` : score, taux, date…). Indexée pour détecter la première ligne.
+- **Ce qu'on construit** : la liste `children`, lignes et traits alternés.
+- **Pourquoi** : le bloc gris de l'écran de résultat sépare ses lignes par un trait fin, sans trait au-dessus de la première ; même motif que 5.12.
+- **À l'oral** : « Pour chaque ligne du récapitulatif, j'ajoute d'abord un séparateur si ce n'est pas la première, puis la ligne elle-même. La colonne obtenue alterne lignes et traits. »
+
+### 5.17 `admin/dashboard_screen.dart` — `_buildFilters` (menu année)
 
 ```dart
 final items = <DropdownMenuItem<String?>>[
-  const DropdownMenuItem<String?>(value: null, child: Text('Toutes les années')),
+  const DropdownMenuItem<String?>(
+    value: null,
+    child: Text('Toutes les années'),
+  ),
 ];
 for (final y in snapshot.data ?? const <String>[]) {
   items.add(DropdownMenuItem<String?>(value: y, child: Text(y)));
@@ -659,7 +815,7 @@ for (final y in snapshot.data ?? const <String>[]) {
 - **Pourquoi** : l'admin filtre les résultats par année ; `null` signifie « pas de filtre ».
 - **À l'oral** : « Je commence la liste avec l'option "Toutes les années", puis j'ajoute une entrée par année scolaire présente en base. »
 
-### 5.12 `admin/dashboard_screen.dart` — `_KeyFigures.build`
+### 5.18 `admin/dashboard_screen.dart` — `_KeyFigures.build`
 
 ```dart
 final candidateIds = <int>{};
@@ -670,14 +826,20 @@ for (final r in results) {
 }
 ```
 
-- **Sur quoi on boucle** : les résultats affichés sur le tableau de bord.
+- **Sur quoi on boucle** : les résultats affichés sur le tableau de bord (déjà filtrés par la recherche et l'année).
 - **Ce qu'on construit** : l'ensemble des ids de candidats distincts (un `Set` ne garde pas les doublons) et le nombre de tests réussis.
-- **Pourquoi** : les tuiles « candidats », « tests », « taux de réussite » en haut du tableau de bord.
+- **Pourquoi** : les tuiles « Candidats », « Tests », « Taux de réussite » en haut du tableau de bord.
 - **À l'oral** : « Je parcours les résultats une fois : j'ajoute l'id du candidat à un ensemble, qui élimine les doublons, et je compte les réussites. La taille de l'ensemble donne le nombre de candidats distincts. »
 
-### 5.13 `admin/stats_screen.dart` — `_buildYearFilter`
+### 5.19 `admin/stats_screen.dart` — `_buildYearFilter`
 
 ```dart
+final items = <DropdownMenuItem<String?>>[
+  const DropdownMenuItem<String?>(
+    value: null,
+    child: Text('Toutes les années'),
+  ),
+];
 for (final y in data.years) {
   items.add(DropdownMenuItem<String?>(value: y, child: Text(y)));
 }
@@ -688,40 +850,115 @@ for (final y in data.years) {
 - **Pourquoi** : même filtre que le tableau de bord, pour les statistiques (US7).
 - **À l'oral** : « Une entrée de menu par année scolaire, ajoutée à une liste qui commence par l'option sans filtre. »
 
-### 5.14 `admin/stats_screen.dart` — `_buildDisciplineGrid`
+### 5.20 `admin/stats_screen.dart` — `_buildDisciplineGrid` : les cartes
 
 ```dart
 final cards = <Widget>[];
 for (final d in Discipline.values) {
   final stats = data.byDiscipline[d]!;
-  cards.add(SizedBox(width: cardWidth, child: _DonutCard(… stats: stats …)));
+  cards.add(
+    _DonutCard(
+      leading: DisciplineAvatar(discipline: d, size: 40),
+      title: d.label,
+      caption: _label(d.label, stats),
+      stats: stats,
+      size: 150,
+      rateSize: 28,
+    ),
+  );
 }
 ```
 
 - **Sur quoi on boucle** : les trois disciplines.
-- **Ce qu'on construit** : une carte « donut » (taux de réussite circulaire) par discipline, toutes de la même largeur.
-- **Pourquoi** : `statsByDiscipline` garantit une entrée par discipline, d'où le `!`.
-- **À l'oral** : « Pour chaque discipline, je récupère ses statistiques dans la Map et je crée une carte avec son graphique circulaire. La largeur est calculée avant la boucle selon la place disponible. »
+- **Ce qu'on construit** : la liste `cards`, une carte « donut » (anneau de taux de réussite) par discipline, sans mise en page.
+- **Pourquoi** : `statsByDiscipline` garantit une entrée par discipline, d'où le `!`. La mise en page (colonne ou ligne) est faite par les deux boucles suivantes, pour qu'une boucle ne fasse qu'une chose.
+- **À l'oral** : « Pour chaque discipline, je récupère ses statistiques dans la Map et je crée une carte avec son avatar, son titre, sa légende et son anneau. J'obtiens trois cartes que je dispose ensuite selon la largeur de l'écran. »
 
-### 5.15 `admin/questions_screen.dart` — `_buildToolbar`
+### 5.21 `admin/stats_screen.dart` — `_buildDisciplineGrid` : empilement sur téléphone
+
+```dart
+if (!threeColumns) {
+  final column = <Widget>[];
+  for (var i = 0; i < cards.length; i++) {
+    if (i > 0) column.add(const SizedBox(height: 12));
+    column.add(cards[i]);
+  }
+  return Column(
+    children: column,
+  ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
+}
+```
+
+- **Sur quoi on boucle** : les positions `i` des cartes construites en 5.20 (indexée pour ne pas mettre d'espace avant la première).
+- **Ce qu'on construit** : la liste `column`, cartes et espaces verticaux de 12 px alternés.
+- **Pourquoi** : sous 700 px de large (`threeColumns` faux), les cartes s'empilent les unes sous les autres dans une `Column`.
+- **À l'oral** : « Sur téléphone, je parcours les cartes et j'intercale un espace de 12 px entre deux cartes, jamais avant la première. La liste devient les enfants d'une colonne. »
+
+### 5.22 `admin/stats_screen.dart` — `_buildDisciplineGrid` : mise en ligne sur grand écran
+
+```dart
+final row = <Widget>[];
+for (var i = 0; i < cards.length; i++) {
+  if (i > 0) row.add(const SizedBox(width: 12));
+  row.add(Expanded(child: cards[i]));
+}
+return IntrinsicHeight(
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: row,
+  ),
+).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04, end: 0);
+```
+
+- **Sur quoi on boucle** : les positions `i` des mêmes cartes (indexée pour l'espace entre deux cartes).
+- **Ce qu'on construit** : la liste `row`, chaque carte enveloppée dans un `Expanded` pour prendre un tiers de la largeur, avec un espace horizontal de 12 px entre deux cartes.
+- **Pourquoi** : à partir de 700 px, les trois cartes sont côte à côte ; `IntrinsicHeight` aligne leur bas même si une légende tient sur deux lignes.
+- **À l'oral** : « Sur grand écran, je parcours les cartes, je mets chacune dans un `Expanded` pour qu'elles se partagent la largeur, et j'intercale un espace de 12 px. La liste devient les enfants d'une ligne de même hauteur. »
+
+### 5.23 `admin/questions_screen.dart` — `_buildToolbar`
 
 ```dart
 final segments = <ButtonSegment<Discipline>>[];
 for (final d in Discipline.values) {
-  segments.add(ButtonSegment(value: d, label: Text(d.label, …)));
+  segments.add(
+    ButtonSegment(
+      value: d,
+      label: Text(d.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+    ),
+  );
 }
 ```
 
 - **Sur quoi on boucle** : les trois disciplines.
 - **Ce qu'on construit** : les segments du bouton segmenté qui sert d'onglets.
-- **Pourquoi** : l'admin choisit la discipline dont il gère les questions (US5).
-- **À l'oral** : « Un segment par discipline, avec son libellé ; le bouton segmenté les affiche côte à côte. »
+- **Pourquoi** : l'admin choisit la discipline dont il gère les questions (US5) ; le libellé est coupé avec des points de suspension s'il manque de place.
+- **À l'oral** : « Un segment par discipline, avec son libellé sur une ligne ; le bouton segmenté les affiche côte à côte. »
 
-### 5.16 `admin/question_editor_screen.dart` — `initState` (brouillons des choix)
+### 5.24 `admin/json_import_screen.dart` — `_buildExample`
 
 ```dart
-for (final c in q.choices) {
-  _choices.add(_ChoiceDraft(c.text, c.correct));
+final lines = <TerminalLine>[];
+for (final text in _exampleLines) {
+  lines.add(TerminalLine(text));
+}
+```
+
+- **Sur quoi on boucle** : `_exampleLines`, la liste constante des lignes de l'exemple de JSON (`{`, `"discipline": "java",`, …).
+- **Ce qu'on construit** : la liste de `TerminalLine` (toutes blanches, couleur par défaut) passée au widget `TerminalCard`.
+- **Pourquoi** : l'exemple s'affiche dans le même faux terminal que l'écran de connexion ; le widget attend des `TerminalLine`, pas des chaînes.
+- **À l'oral** : « Pour chaque ligne de texte de l'exemple, je crée une `TerminalLine` sans couleur particulière et je l'ajoute à une liste. Le terminal affiche ensuite cette liste sous le titre `java.json`. »
+
+### 5.25 `admin/question_editor_screen.dart` — `initState` (brouillons des choix)
+
+```dart
+_choices = [];
+if (q == null) {
+  _choices.add(_ChoiceDraft('', false));
+  _choices.add(_ChoiceDraft('', false));
+} else {
+  for (final c in q.choices) {
+    _choices.add(_ChoiceDraft(c.text, c.correct));
+  }
 }
 ```
 
@@ -730,7 +967,7 @@ for (final c in q.choices) {
 - **Pourquoi** : le formulaire travaille sur des brouillons modifiables, pas sur la `Question` immuable ; pour une nouvelle question on crée deux brouillons vides à la place.
 - **À l'oral** : « À l'ouverture en mode édition, je crée pour chaque choix existant un brouillon avec son texte et son état "bonne réponse", dans le même ordre. »
 
-### 5.17 `admin/question_editor_screen.dart` — `dispose`
+### 5.26 `admin/question_editor_screen.dart` — `dispose`
 
 ```dart
 for (final c in _choices) {
@@ -743,7 +980,7 @@ for (final c in _choices) {
 - **Pourquoi** : le nombre de choix varie, on ne peut pas écrire les `dispose()` un par un.
 - **À l'oral** : « Comme chaque choix a son propre contrôleur, je les libère tous en boucle quand l'écran se ferme. »
 
-### 5.18 `admin/question_editor_screen.dart` — `_draft`
+### 5.27 `admin/question_editor_screen.dart` — `_draft`
 
 ```dart
 final choices = <Choice>[];
@@ -754,10 +991,10 @@ for (final c in _choices) {
 
 - **Sur quoi on boucle** : les brouillons de choix.
 - **Ce qu'on construit** : la liste de `Choice` de la `Question` à valider puis enregistrer.
-- **Pourquoi** : opération inverse de 5.16 : brouillons → modèle, au moment de cliquer sur « Enregistrer ».
+- **Pourquoi** : opération inverse de 5.25 : brouillons → modèle, au moment de cliquer sur « Enregistrer ».
 - **À l'oral** : « Je relis le texte tapé dans chaque brouillon et son état coché, et j'en fais un `Choice`. La liste obtenue est passée à `validateQuestion` puis au repository. »
 
-### 5.19 `admin/question_editor_screen.dart` — `_setCorrect` (mode radio)
+### 5.28 `admin/question_editor_screen.dart` — `_setCorrect` (mode radio)
 
 ```dart
 for (var j = 0; j < _choices.length; j++) {
@@ -770,7 +1007,7 @@ for (var j = 0; j < _choices.length; j++) {
 - **Pourquoi** : en choix unique, cocher un choix doit décocher tous les autres.
 - **À l'oral** : « En mode radio, je repasse sur tous les choix : celui qu'on vient de cliquer prend la nouvelle valeur, tous les autres passent à faux. »
 
-### 5.20 `admin/question_editor_screen.dart` — `_setType` : première bonne réponse
+### 5.29 `admin/question_editor_screen.dart` — `_setType` : première bonne réponse
 
 ```dart
 var first = -1;
@@ -787,7 +1024,7 @@ for (var j = 0; j < _choices.length; j++) {
 - **Pourquoi** : en passant de checkbox à radio, on ne peut garder qu'une seule bonne réponse : on garde la première.
 - **À l'oral** : « Je cherche le premier choix coché ; dès que je le trouve, je note son index et je sors de la boucle avec `break`. »
 
-### 5.21 `admin/question_editor_screen.dart` — `_setType` : ne garder que celle-là
+### 5.30 `admin/question_editor_screen.dart` — `_setType` : ne garder que celle-là
 
 ```dart
 for (var j = 0; j < _choices.length; j++) {
@@ -797,10 +1034,10 @@ for (var j = 0; j < _choices.length; j++) {
 
 - **Sur quoi on boucle** : les positions `j` des brouillons.
 - **Ce qu'on construit** : rien ; seul le choix `first` reste coché.
-- **Pourquoi** : deuxième moitié du passage en mode radio ; séparée de 5.20 pour qu'une boucle ne fasse qu'une chose.
+- **Pourquoi** : deuxième moitié du passage en mode radio ; séparée de 5.29 pour qu'une boucle ne fasse qu'une chose.
 - **À l'oral** : « Une fois l'index de la première bonne réponse connu, je repasse sur tous les choix et je ne laisse coché que celui-là. »
 
-### 5.22 `admin/question_editor_screen.dart` — `_buildParams`
+### 5.31 `admin/question_editor_screen.dart` — `_buildParams`
 
 ```dart
 final items = <DropdownMenuItem<QuestionType>>[];
@@ -814,22 +1051,27 @@ for (final t in QuestionType.values) {
 - **Pourquoi** : l'admin choisit le type de question dans une liste déroulante.
 - **À l'oral** : « Une entrée de menu par type de question, avec son libellé "Choix unique" ou "Choix multiples". »
 
-### 5.23 `admin/question_editor_screen.dart` — `_buildChoices`
+### 5.32 `admin/question_editor_screen.dart` — `_buildChoices`
 
 ```dart
 final rows = <Widget>[];
 for (var i = 0; i < _choices.length; i++) {
-  rows.add(_ChoiceRow(
-    index: i, draft: _choices[i], canRemove: _choices.length > 2,
-    onCorrectChanged: (v) => _setCorrect(i, v), onRemove: () => _removeChoice(i),
-  ));
+  rows.add(
+    _ChoiceRow(
+      index: i,
+      draft: _choices[i],
+      canRemove: _choices.length > 2,
+      onCorrectChanged: (v) => _setCorrect(i, v),
+      onRemove: () => _removeChoice(i),
+    ),
+  );
 }
 ```
 
 - **Sur quoi on boucle** : les positions `i` des brouillons (indexée pour savoir quel choix cocher ou supprimer au clic).
 - **Ce qu'on construit** : une ligne de formulaire par choix.
 - **Pourquoi** : la suppression est désactivée quand il ne reste que deux choix (règle « au moins 2 choix »).
-- **À l'oral** : « Pour chaque brouillon, je crée une ligne avec son champ texte, son bouton "Bonne réponse" et son bouton supprimer ; je passe l'index pour que les callbacks sachent sur quel choix agir. »
+- **À l'oral** : « Pour chaque brouillon, je crée une ligne avec son champ texte, sa lettre-bascule "Bonne réponse" et son bouton supprimer ; je passe l'index pour que les callbacks sachent sur quel choix agir. »
 
 ---
 
@@ -840,6 +1082,6 @@ for (var i = 0; i < _choices.length; i++) {
 | Données | `app_database.dart`, `question_repository.dart`, `result_repository.dart` | 15 |
 | Logique | `scoring.dart`, `question_json.dart` | 8 |
 | Modèles | `discipline.dart`, `motivation.dart`, `question.dart` | 4 |
-| État / thème / widgets / `main` / `app` | — | 0 |
-| Écrans | `auth/`, `candidate/`, `admin/` | 23 |
-| **Total** | | **50** |
+| État / thème / widgets / `main` / `app` | `widgets/terminal_card.dart` | 1 |
+| Écrans | `auth/` (4), `candidate/` (12), `admin/` (16) | 32 |
+| **Total** | | **60** |

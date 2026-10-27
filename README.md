@@ -146,4 +146,4 @@ widgets (formulaires, timer du test, recherche, import JSON, camemberts).
 Le code est entièrement commenté en français (voir `docs/CONVENTIONS.md`) : chaque fichier,
 classe et méthode explique ce qu'il fait et pourquoi. Toutes les boucles sont de simples
 `for` avec un accumulateur explicite, précédées d'un commentaire, et `docs/BOUCLES.md`
-les liste une par une avec une explication prête pour l'oral.
+les liste une par une (60 boucles) avec une explication prête pour l'oral.
