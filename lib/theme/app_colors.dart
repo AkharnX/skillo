@@ -1,3 +1,10 @@
+/// Palette de couleurs de l'application (voir `docs/CONVENTIONS.md`).
+///
+/// Aucun écran ne doit écrire une couleur en dur : tout passe par
+/// [AppColors], ce qui garantit la cohérence visuelle et permet de changer
+/// l'identité graphique en un seul endroit.
+library;
+
 import 'package:flutter/material.dart';
 
 import '../models/discipline.dart';

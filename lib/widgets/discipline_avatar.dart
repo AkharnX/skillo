@@ -1,3 +1,6 @@
+/// Widget partagé : pastille colorée représentant une discipline.
+library;
+
 import 'package:flutter/material.dart';
 
 import '../models/discipline.dart';
@@ -10,6 +13,7 @@ import '../theme/app_colors.dart';
 class DisciplineAvatar extends StatelessWidget {
   const DisciplineAvatar({super.key, required this.discipline, this.size = 48});
 
+  /// Discipline représentée : elle décide de la couleur et de l'icône.
   final Discipline discipline;
 
   /// Diamètre de la pastille en pixels logiques.
@@ -17,6 +21,8 @@ class DisciplineAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Couleur de la discipline : pleine pour l'icône, très transparente
+    // (12 %) pour le fond, afin que la pastille reste douce.
     final color = AppColors.forDiscipline(discipline);
     return Container(
       width: size,

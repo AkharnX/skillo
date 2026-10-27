@@ -1,3 +1,6 @@
+/// Widget partagé : en-tête en dégradé violet des écrans principaux.
+library;
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -58,6 +61,7 @@ class GradientHeader extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
+                    // Sous-titre affiché seulement s'il est fourni.
                     if (subtitle != null) ...[
                       const SizedBox(height: 4),
                       Text(
@@ -74,6 +78,7 @@ class GradientHeader extends StatelessWidget {
               ?trailing, // affiché seulement s'il est fourni
             ],
           ),
+          // Contenu supplémentaire (avec un espace) seulement s'il est fourni.
           if (child != null) ...[const SizedBox(height: 20), child!],
         ],
       ),

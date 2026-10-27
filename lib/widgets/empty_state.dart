@@ -1,3 +1,6 @@
+/// Widget partagé : message « rien à afficher » pour les listes vides.
+library;
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -14,8 +17,13 @@ class EmptyState extends StatelessWidget {
     this.message,
   });
 
+  /// Grande icône grise au-dessus du titre.
   final IconData icon;
+
+  /// Titre court (ex. « Aucun résultat »).
   final String title;
+
+  /// Phrase d'explication optionnelle sous le titre.
   final String? message;
 
   @override
@@ -33,6 +41,7 @@ class EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),
+            // Le message et son espacement ne sont ajoutés que s'il existe.
             if (message != null) ...[
               const SizedBox(height: 4),
               Text(

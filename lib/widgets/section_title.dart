@@ -1,3 +1,6 @@
+/// Widget partagé : titre de section avec sous-titre optionnel.
+library;
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -7,7 +10,10 @@ import '../theme/app_colors.dart';
 class SectionTitle extends StatelessWidget {
   const SectionTitle({super.key, required this.title, this.subtitle});
 
+  /// Texte du titre, en gras.
   final String title;
+
+  /// Ligne grise optionnelle sous le titre.
   final String? subtitle;
 
   @override

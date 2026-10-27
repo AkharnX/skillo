@@ -1,3 +1,7 @@
+/// Thème Material 3 de l'application : police, couleurs et formes partagées
+/// par tous les écrans. Construit une seule fois dans `app.dart`.
+library;
+
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
@@ -19,7 +23,9 @@ ThemeData buildAppTheme() {
   );
 
   // Forme arrondie partagée par les cartes, boutons et champs.
-  final rounded = RoundedRectangleBorder(borderRadius: BorderRadius.circular(16));
+  final rounded = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(16),
+  );
 
   return ThemeData(
     useMaterial3: true,
@@ -46,9 +52,7 @@ ThemeData buildAppTheme() {
     cardTheme: CardThemeData(
       color: AppColors.surface,
       elevation: 0,
-      shape: rounded.copyWith(
-        side: const BorderSide(color: Color(0xFFE5E7EB)),
-      ),
+      shape: rounded.copyWith(side: const BorderSide(color: Color(0xFFE5E7EB))),
       margin: EdgeInsets.zero,
     ),
 

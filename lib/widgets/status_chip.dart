@@ -1,3 +1,6 @@
+/// Widget partagé : badge coloré « Réussi » / « Échoué ».
+library;
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -15,7 +18,10 @@ class StatusChip extends StatelessWidget {
     );
   }
 
+  /// Texte court affiché dans le badge.
   final String label;
+
+  /// Teinte du badge : pleine pour le texte, à 12 % pour le fond.
   final Color color;
 
   @override
