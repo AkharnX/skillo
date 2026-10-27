@@ -9,6 +9,7 @@ import 'screens/admin/admin_shell.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/candidate/candidate_home_screen.dart';
 import 'state/auth_state.dart';
+import 'theme/app_theme.dart';
 
 /// Racine de l'application : fournit la base, les repositories et l'état
 /// d'authentification à tous les écrans.
@@ -31,13 +32,8 @@ class ReineApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Reine',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorSchemeSeed: const Color(0xFF5B3FD6),
-          useMaterial3: true,
-          inputDecorationTheme: const InputDecorationTheme(
-            border: OutlineInputBorder(),
-          ),
-        ),
+        // Thème unique défini dans lib/theme/app_theme.dart.
+        theme: buildAppTheme(),
         home: const HomeRouter(),
       ),
     );

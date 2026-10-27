@@ -1,0 +1,27 @@
+import 'package:flutter/material.dart';
+
+import '../theme/app_colors.dart';
+
+/// Titre de section (ex. "Mes tests", "Résultats récents") avec un sous-titre
+/// optionnel, pour structurer les écrans qui empilent plusieurs blocs.
+class SectionTitle extends StatelessWidget {
+  const SectionTitle({super.key, required this.title, this.subtitle});
+
+  final String title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+        ),
+        if (subtitle != null)
+          Text(subtitle!, style: const TextStyle(color: AppColors.muted)),
+      ],
+    );
+  }
+}
